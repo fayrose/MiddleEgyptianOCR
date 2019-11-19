@@ -19,7 +19,6 @@ def main():
     entry.split_blocks_into_verticals()
     print(entry.blocks[3].verticals)
     display(entry.blocks[3].verticals[0].image)
-    #display(entry.blocks[3].verticals)
 
 if __name__ == "__main__":
     main()
