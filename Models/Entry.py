@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
 from BoundaryCreator import create_boundaries
-from Block import Block
+from Models.Block import Block
 
 class Entry:
     def __init__(self, filename):

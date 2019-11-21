@@ -1,6 +1,6 @@
 import numpy as np
 from BoundaryCreator import create_boundaries
-from VerticalSlice import VerticalSlice
+from Models.VerticalSlice import VerticalSlice
 
 class Block:
     def __init__(self, left_boundary, right_boundary, image):

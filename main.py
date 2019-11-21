@@ -1,4 +1,4 @@
-from Entry import Entry
+from Models.Entry import Entry
 import matplotlib.pyplot as plt
 
 def display(image, boundaries=None, vertical=True):
@@ -12,13 +12,12 @@ def display(image, boundaries=None, vertical=True):
                 plt.axhline(boundary)
     plt.show()
 
-
 def main():
-    entry = Entry("C:/Users/lfr2l/Desktop/experiment3.jpg")
+    entry = Entry("C:/Users/lfr2l/Desktop/messed.jpg")
+    display(entry.image)
     entry.split_into_words()
     entry.split_blocks_into_verticals()
-    print(entry.blocks[3].verticals)
-    display(entry.blocks[3].verticals[0].image)
+    display(entry.blocks[2].verticals[0].image)
 
 if __name__ == "__main__":
     main()
