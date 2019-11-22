@@ -1,5 +1,8 @@
 import os
 import random
+
+# Note this class returns paths of images and not the opened images
+# in order to save space.
 class DataLoader:
     def __init__(self, entry_img_folder, data_json_path, char_img_folder):
         self.entry_folder = entry_img_folder
@@ -16,7 +19,7 @@ class DataLoader:
             lst.append(self.load_entry(page_num, indx))
         return lst
 
-    def load_entries_subset(self, num_entries):
+    def load_entries_random(self, num_entries):
         lst = []
         sampled_entries = random.sample(os.listdir(self.entry_folder), num_entries)
         for entry in sampled_entries:
@@ -24,8 +27,8 @@ class DataLoader:
             lst.append(self.load_entry(page_num, indx))
 
     def load_entry(self, page_number, idx):
-        image_path = os.path.join(self.entry_img_path,
-                                       "page{0}_entry{1}.tiff".format(page_number, idx))
+        image_path = None # os.path.join(self.entry_img_path,
+                          #              "page{0}_entry{1}.tiff".format(page_number, idx))
         sign_list = None # self.data['Pages'][page_number - 1]['EntryData'][idx]['GardinerSigns']
         answer = None # self.data['Pages][page_number - 1]['EntryData][idx]['ManuelDeCodage']
         return (image_path, sign_list, answer)
@@ -34,4 +37,9 @@ class DataLoader:
         page_num = entry[4:entry.index("_")]
         indx = entry[entry.index(entry) + 5:entry.index('.')]
         return page_num, indx
-        
+    
+    def generate_character_dataset(self):
+        for char_path in os.listdir(self.chars_path):
+            pass
+            # Get glyph name from filename
+            # return dictionary mapping gardiners to image paths
