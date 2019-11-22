@@ -9,9 +9,10 @@ class Block:
         self.image = np.copy(image[:, self.left_bound : self.right_bound+2])
         self.verticals = []
 
-    def split_into_verticals(self):
+    def split_into_verticals(self, allChars):
         bounds = create_boundaries(self.image, vertical=True)
         for i in range(0, len(bounds), 2):
             sliced = VerticalSlice(bounds[i], bounds[i + 1], self, self.image)
-            sliced.split_slice_into_glyphs()
+            characters = sliced.split_slice_into_glyphs()
+            allChars += characters
             self.verticals.append(sliced)
