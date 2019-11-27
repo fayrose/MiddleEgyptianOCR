@@ -29,12 +29,40 @@ class Entry:
         self.gardiners = []
         self.glyphs = []
 
+    def process_image(self):
+        display(self.image)
+        self.split_into_words()
+        self.split_blocks_into_verticals()
+        for glypth in self.glyphs:
+            self.resize_img(glypth.image)
+
+    #32x32 <- want
+    def resize_img(self,image):
+        desired_size = 128
+        old_size = image.shape[:2] # old_size is in (height, width) format
+
+        ratio = float(desired_size)/max(old_size)
+        new_size = tuple([int(x*ratio) for x in old_size])
+
+        # new_size should be in (width, height) format
+        image = cv.resize(image, (new_size[1], new_size[0]))
+
+        delta_w = desired_size - new_size[1]
+        delta_h = desired_size - new_size[0]
+        top, bottom = delta_h//2, delta_h-(delta_h//2)
+        left, right = delta_w//2, delta_w-(delta_w//2)
+
+        color = [0, 0, 0]
+        new_im = cv.copyMakeBorder(image, top, bottom, left, right, cv.BORDER_CONSTANT,
+            value=color)
+        display(new_im)
+
     #look for up/down gaps and split words
     def split_into_words(self):
         boundaries = create_boundaries(self.image)
         for i in range(0, len(boundaries) - 1, 2):
             self.blocks.append(Block(boundaries[i], boundaries[i + 1], self.image))
-        display(self.image,boundaries)
+        # display(self.image,boundaries)
 
     def checkgrouping(self,char,groupings):
         for i in range(len(groupings)):
@@ -107,7 +135,7 @@ class Entry:
                 glyph = self.groupVert(group + [bottomPlug])
                 self.glyphs.append(glyph)
                 groupings[j] = []
-                display(glyph.image)
+                # display(glyph.image)
                 return
                 #its a plug
         #incorrect 2 grouping, add them as sepeeratre glyphs.
@@ -139,7 +167,7 @@ class Entry:
                 return
             tripleHotdog = best[0] + best[1]
             glyph = self.groupVert(tripleHotdog)
-            display(glyph.image)
+            # display(glyph.image)
             self.glyphs.append(glyph)
             groupings.remove(best[0])
             groupings.remove(best[1])
@@ -156,8 +184,7 @@ class Entry:
         #chars are glpyhs, convert to Glyth objects
         if len(self.characters) == len(self.gardiners):
             for char in self.characters:
-                char.upper = char.upper
-                #INSERT REAL CODE LOL
+                self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
         else:
             if len(self.characters) > len(self.gardiners):
                 groupings = []
@@ -201,9 +228,9 @@ class Entry:
                         glyph = self.groupHori(group)
                     else:
                         glyph = self.groupVert(group)
-                    display(glyph.image)
+                    # display(glyph.image)
                     self.glyphs.append(glyph)
-                    display(self.image)
+                    # display(self.image)
 
                 for glyph in self.glyphs:
                     display(glyph.image)
