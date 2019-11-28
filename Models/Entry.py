@@ -33,8 +33,8 @@ class Entry:
         display(self.image)
         self.split_into_words()
         self.split_blocks_into_verticals()
-        for glypth in self.glyphs:
-            self.resize_img(glypth.image)
+        for i in range(len(self.glyphs)):
+            self.glyphs[i].image = self.resize_img(self.glyphs[i].image)
 
     #32x32 <- want
     def resize_img(self,image):
@@ -55,6 +55,7 @@ class Entry:
         color = [0, 0, 0]
         new_im = cv.copyMakeBorder(image, top, bottom, left, right, cv.BORDER_CONSTANT,
             value=color)
+        return new_im
         display(new_im)
 
     #look for up/down gaps and split words
@@ -77,9 +78,9 @@ class Entry:
                 hori = False
                 vert = False
 
-            if abs(char.left + char.xoffset - sample.left + sample.xoffset) > 2:
+            if abs((char.left + char.xoffset) - (sample.left + sample.xoffset)) > 2:
                 vert = False
-            if abs(char.right + char.xoffset - sample.right + sample.xoffset) > 2:
+            if abs((char.right + char.xoffset) - (sample.right + sample.xoffset)) > 2:
                 vert = False
             if hori or vert:
                 groupings[i].append(char)
