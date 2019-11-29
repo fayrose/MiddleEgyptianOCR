@@ -26,13 +26,6 @@ class DataLoader:
             page_num, indx = self.page_idx_from_filename(entry)
             lst.append(self.load_entry(page_num, indx))
 
-<<<<<<< HEAD
-    def load_entry(self, page_number, idx):
-        image_path = None # os.path.join(self.entry_img_path,
-                          #              "page{0}_entry{1}.tiff".format(page_number, idx))
-        sign_list = None # self.data['Pages'][page_number - 1]['EntryData'][idx]['GardinerSigns']
-        answer = None # self.data['Pages][page_number - 1]['EntryData][idx]['ManuelDeCodage']
-=======
     def load_entries_on_page(self, page_number):
         image_paths = []
         sign_lists = []
@@ -60,7 +53,6 @@ class DataLoader:
                                        "page{0}_entry{1}.tiff".format(page_number, idx))
         sign_list = self.data['Pages'][page_number - 1]['EntryData'][idx]['GardinerSigns']
         answer = self.data['Pages'][page_number - 1]['EntryData'][idx]['ManuelDeCodage']
->>>>>>> 685f773d13c15d21e49f6367642c73ae1227a804
         return (image_path, sign_list, answer)
         
     def page_idx_from_filename(self, entry):

@@ -1,22 +1,13 @@
-import cv2 as cv
+import cv2               as cv
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy import ndimage
-from BoundaryCreator import create_boundaries
-from Models.Block import Block
+import numpy             as np
 import SpecialGlyphs
-from Models.Glyph import Glyph
 
-def display(image, boundaries=None, vertical=True):
-    plt.imshow(image)
-    if boundaries is not None:
-        if vertical:
-            for boundary in boundaries:
-                plt.axvline(boundary)
-        else:
-            for boundary in boundaries:
-                plt.axhline(boundary)
-    plt.show()
+from scipy            import ndimage
+from BoundaryCreator  import create_boundaries
+from Models.Block     import Block
+from Models.Glyph     import Glyph
+from Services.Display import display
 
 class Entry:
     def __init__(self, filename):
