@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import numpy             as np
 import SpecialGlyphs
 
-from scipy            import ndimage
-from BoundaryCreator  import create_boundaries
-from Models.Block     import Block
-from Models.Glyph     import Glyph
-from Services.Display import display
+from scipy                 import ndimage
+from BoundaryCreator       import create_boundaries
+from Models.Block          import Block
+from Models.Glyph          import Glyph
+from Services.Display      import display
+from Services.ImageResizer import resize_img
 
 class Entry:
     def __init__(self, filename):
@@ -25,29 +26,7 @@ class Entry:
         self.split_into_words()
         self.split_blocks_into_verticals()
         for i in range(len(self.glyphs)):
-            self.glyphs[i].image = self.resize_img(self.glyphs[i].image)
-
-    #32x32 <- want
-    def resize_img(self,image):
-        desired_size = 128
-        old_size = image.shape[:2] # old_size is in (height, width) format
-
-        ratio = float(desired_size)/max(old_size)
-        new_size = tuple([int(x*ratio) for x in old_size])
-
-        # new_size should be in (width, height) format
-        image = cv.resize(image, (new_size[1], new_size[0]))
-
-        delta_w = desired_size - new_size[1]
-        delta_h = desired_size - new_size[0]
-        top, bottom = delta_h//2, delta_h-(delta_h//2)
-        left, right = delta_w//2, delta_w-(delta_w//2)
-
-        color = [0, 0, 0]
-        new_im = cv.copyMakeBorder(image, top, bottom, left, right, cv.BORDER_CONSTANT,
-            value=color)
-        return new_im
-        # display(new_im)
+            self.glyphs[i].image = resize_img(self.glyphs[i].image)
 
     #look for up/down gaps and split words
     def split_into_words(self):
