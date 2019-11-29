@@ -1,5 +1,6 @@
-from Display import display
-def resize_img(image, display=False):
+from Services.Display import display
+import cv2
+def resize_img(image, display_img=False):
     desired_size = 128
     old_size = image.shape[:2] # old_size is in (height, width) format
 
@@ -18,7 +19,7 @@ def resize_img(image, display=False):
     new_im = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT,
         value=color)
 
-    if display:
+    if display_img:
         display(new_im)
 
     return new_im
