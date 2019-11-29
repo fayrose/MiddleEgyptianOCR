@@ -30,7 +30,7 @@ class Entry:
         self.glyphs = []
 
     def process_image(self):
-        display(self.image)
+        # display(self.image)
         self.split_into_words()
         self.split_blocks_into_verticals()
         for i in range(len(self.glyphs)):
@@ -56,7 +56,7 @@ class Entry:
         new_im = cv.copyMakeBorder(image, top, bottom, left, right, cv.BORDER_CONSTANT,
             value=color)
         return new_im
-        display(new_im)
+        # display(new_im)
 
     #look for up/down gaps and split words
     def split_into_words(self):
@@ -233,8 +233,8 @@ class Entry:
                     self.glyphs.append(glyph)
                     # display(self.image)
 
-                for glyph in self.glyphs:
-                    display(glyph.image)
+                # for glyph in self.glyphs:
+                    # display(glyph.image)
 
                 print(len(groupings))
                     # display(char.image)

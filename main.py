@@ -45,24 +45,30 @@ def main():
     char_img_folder = r"C:\Users\Tom-H\Documents\CSC420\Visual_Vygus\character_images"
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
     image_path,sign_list,answer = dataLoader.load_entries_on_page(3)
+    p = 0
     for i in range(len(image_path)):
         entry = Entry(image_path[i])
         entry.gardiners = sign_list[i]
         entry.process_image()
         allEntries.append(entry)
-        break
+        p += 1
+        #FOR TESTING PURPOSES TO KILL CODE EARLY BUT SHOULD REMOVE EVENTUALLY
+        if p > 5:
+            break
 
-    for entry in allEntries:
-        for glyph in entry.glyphs:
+    for entry in allEntries[2:]:
+        for glyph in entry.glyphs[:]:
+            pastMatches = []
             bestMatch = np.zeros((1,1))
             bestMatchVal = 0
             matchSquare = None
             sift = cv2.xfeatures2d.SIFT_create()
-            glyph.image[glyph.image > 0] = 255
-            display(glyph.image)
-            glyph.image = glyph.image.astype(np.uint8)
+            glyph.image *= 255
+            # display(glyph.image)
             kernel = np.ones((3,3),np.uint8)/9
             glyph.image = cv2.filter2D(glyph.image,-1,kernel)
+            glyph.image = glyph.image.astype(np.uint8)
+
             display(glyph.image)
             
             for f in listdir(char_img_folder):
@@ -72,7 +78,20 @@ def main():
                 img = np.invert(img)
                 img = resize_img(img)
                 img = img.astype(np.uint8)
-                
+
+                entry = Entry(char_img_folder + "\\"+f)
+                # entry.gardiners = sign_list[i]
+                #BUG BUG BUG BUG BUG
+                # BUG BUG
+                #RIGHT SIDE OF IMAGES ARE BEING CUT OFF????
+                entry.process_image()
+                if len(entry.glyphs) == 0:
+                    continue
+                img = entry.glyphs[0].image * 255
+                kernel = np.ones((3,3),np.uint8)/9
+                img = cv2.filter2D(img,-1,kernel)
+                img = img.astype(np.uint8)
+
                 kp1,des1 = sift.detectAndCompute(img,None)
                 # display(img)
 
@@ -83,19 +102,21 @@ def main():
                     pt = (int(pt[0]), int(pt[1]))
                     if len(patches) > 0:
                         closest = sorted(patches, key = lambda x: np.linalg.norm(np.asarray(pt)-(np.asarray(x[0]))))[0][0]
-                        if np.linalg.norm(np.asarray(closest) - np.asarray(pt)) < 40:
+                        if np.linalg.norm(np.asarray(closest) - np.asarray(pt)) < 15:
                             continue
-                    if pt[0] < 20 or pt[0] > 107:
-                        continue
-                    if pt[1] < 20 or pt[1] > 107:
-                        continue
-                    patches.append(   (pt,img[pt[1]-20:pt[1]+20,pt[0]-20:pt[0]+20])    )
-                    if len(patches) > 10:
+                    size = np.random.randint(30,60)
+                    Xstart = max(pt[1]-size,0)
+                    Xend = min(127,pt[1]+size)
+                    Ystart = max(pt[0]-size,0)
+                    Yend = min(127,pt[0]+size)
+                    patches.append(   (pt,img[Xstart:Xend,Ystart:Yend])    )
+                    if len(patches) > 20:
                         break
                 maxVSum = 0
+                maxVs= []
                 for pt, patch in patches:
                     # display(patch)
-                    correlation = cv2.matchTemplate(glyph.image, patch, cv2.TM_CCORR_NORMED)
+                    correlation = cv2.matchTemplate(glyph.image, patch, cv2.TM_CCOEFF_NORMED)
                     minV,maxV,minL,maxL = cv2.minMaxLoc(correlation)
                     # display(correlation)  
                     top_left = maxL
@@ -104,11 +125,26 @@ def main():
                     cv2.rectangle(squared,top_left,bottom_right,1,1)
                     # plt.imshow(squared)
                     # plt.show()
-                    maxVSum += maxV
+                    # maxVSum += maxV
+
+                        
+                    maxVs.append(maxV)
+                if f == "F34.tiff":
+                    display(img)  
                 if len(patches) == 0 :
                     continue
-                if maxVSum/len(patches) > bestMatchVal:
-                    bestMatchVal = maxVSum/len(patches)
+                maxVs = sorted(maxVs, key = lambda x: -x)
+                maxLens = 0
+                for maxi in maxVs:
+                    maxVSum+= maxi
+                    maxLens+=1
+                    if maxLens > 5:
+                        break
+
+                currentMatchVal = maxVSum/maxLens
+                if currentMatchVal > bestMatchVal:
+                    bestMatchVal = currentMatchVal
+                    pastMatches = [img] + pastMatches
                     bestMatch = img
                     matchSquare =squared
 
@@ -131,6 +167,8 @@ def main():
             display(matchSquare)
             display(bestMatch)
             display(glyph.image)
+            for w in pastMatches[:4]:
+                display(w)
 
 
         print(entry)
