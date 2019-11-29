@@ -2,6 +2,8 @@ import os
 import random
 import json
 class DataLoader:
+    # Note this class returns paths of images and not the opened images
+    # in order to save space.
     def __init__(self, entry_img_folder, data_json_path, char_img_folder):
         self.entry_folder = entry_img_folder
         self.data_path = data_json_path
@@ -17,13 +19,20 @@ class DataLoader:
             lst.append(self.load_entry(page_num, indx))
         return lst
 
-    def load_entries_subset(self, num_entries):
+    def load_entries_random(self, num_entries):
         lst = []
         sampled_entries = random.sample(os.listdir(self.entry_folder), num_entries)
         for entry in sampled_entries:
             page_num, indx = self.page_idx_from_filename(entry)
             lst.append(self.load_entry(page_num, indx))
 
+<<<<<<< HEAD
+    def load_entry(self, page_number, idx):
+        image_path = None # os.path.join(self.entry_img_path,
+                          #              "page{0}_entry{1}.tiff".format(page_number, idx))
+        sign_list = None # self.data['Pages'][page_number - 1]['EntryData'][idx]['GardinerSigns']
+        answer = None # self.data['Pages][page_number - 1]['EntryData][idx]['ManuelDeCodage']
+=======
     def load_entries_on_page(self, page_number):
         image_paths = []
         sign_lists = []
@@ -51,10 +60,16 @@ class DataLoader:
                                        "page{0}_entry{1}.tiff".format(page_number, idx))
         sign_list = self.data['Pages'][page_number - 1]['EntryData'][idx]['GardinerSigns']
         answer = self.data['Pages'][page_number - 1]['EntryData'][idx]['ManuelDeCodage']
+>>>>>>> 685f773d13c15d21e49f6367642c73ae1227a804
         return (image_path, sign_list, answer)
         
     def page_idx_from_filename(self, entry):
         page_num = entry[4:entry.index("_")]
         indx = entry[entry.index(entry) + 5:entry.index('.')]
         return page_num, indx
-        
+    
+    def generate_character_dataset(self):
+        for char_path in os.listdir(self.chars_path):
+            pass
+            # Get glyph name from filename
+            # return dictionary mapping gardiners to image paths
