@@ -6,3 +6,6 @@ class Glyph:
       self.right = rightBound
       self.image = image[upper:lower,self.left:self.right]
       self.width = self.right - self.left
+
+    def set_classification(self, gardiner_id):
+      self.gardiner = gardiner_id
