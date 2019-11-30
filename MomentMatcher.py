@@ -66,4 +66,6 @@ class Matcher:
         # and only take top k correct. Distribute other signs.
         print("Deal with this situation.")
     
-
+    def classify_entries(self, entry_list):
+        for entry in entry_list:
+            self.classify_entry(entry)
