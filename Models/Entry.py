@@ -24,7 +24,9 @@ class Entry:
     def process_image(self):
         # display(self.image)
         self.split_into_words()
-        self.split_blocks_into_verticals()
+        try:
+            self.split_blocks_into_verticals()
+        except: return
         for i in range(len(self.glyphs)):
             self.glyphs[i].image = resize_img(self.glyphs[i].image)
 
@@ -208,5 +210,5 @@ class Entry:
                 # for glyph in self.glyphs:
                     # display(glyph.image)
 
-                print(len(groupings))
+                #print(len(groupings))
                     # display(char.image)

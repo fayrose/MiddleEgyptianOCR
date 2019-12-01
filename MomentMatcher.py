@@ -70,7 +70,7 @@ class Matcher:
         # and only take top k correct. Distribute other signs.
         return self.try_and_recover(entry, class_dict, dict1, dict2)
     
-    def try_and_recover(self, entry, class_dict, dict1 : Counter, dict2 : Counter):
+    def try_and_recover(self, entry, class_dict, dict1 : Counter, dict2 : Counter, print_success=False):
         # Partition dictionaries into over/under/correctly classified
         over, under, same = {}, {}, {}
         for dkey in dict1.keys():
@@ -108,9 +108,10 @@ class Matcher:
         
         for item in to_remove_over:  del over[item]
         for item in to_remove_under: del under[item]
-        
+
         rec_success = len(under) == 0 and len(over) == 0
-        print("Reconstruction successful: {0}".format(rec_success))
+        if print_success:
+            print("Reconstruction successful: {0}".format(rec_success))
         return rec_success
 
     def classify_entries(self, entry_list):
