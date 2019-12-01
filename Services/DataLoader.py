@@ -48,6 +48,16 @@ class DataLoader:
 
         return (image_paths, sign_lists, answers)
 
+    def load_entries_in_range(self, page_range):
+        img_paths, sign_lists, answers = [], [], []
+        for pg in page_range:
+            o1, o2, o3 = self.load_entries_on_page(pg)
+            img_paths.extend(o1)
+            sign_lists.extend(o2)
+            answers.extend(o3)
+
+        return (img_paths, sign_lists, answers)
+
     def load_entry(self, page_number,idx):
         image_path = os.path.join(self.entry_folder,
                                        "page{0}_entry{1}.tiff".format(page_number, idx))
@@ -59,9 +69,3 @@ class DataLoader:
         page_num = entry[4:entry.index("_")]
         indx = entry[entry.index(entry) + 5:entry.index('.')]
         return page_num, indx
-    
-    def generate_character_dataset(self):
-        for char_path in os.listdir(self.chars_path):
-            pass
-            # Get glyph name from filename
-            # return dictionary mapping gardiners to image paths
