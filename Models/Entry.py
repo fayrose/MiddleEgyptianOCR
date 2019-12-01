@@ -37,6 +37,8 @@ class Entry:
 
     def checkgrouping(self,char,groupings):
         for i in range(len(groupings)):
+            if len(groupings[i]) == 3:
+                continue
             sample = groupings[i][0]
             hori = True
             vert = True
@@ -47,7 +49,6 @@ class Entry:
             if abs(char.width - sample.width) > 5:
                 hori = False
                 vert = False
-
             if abs((char.left + char.xoffset) - (sample.left + sample.xoffset)) > 2:
                 vert = False
             if abs((char.right + char.xoffset) - (sample.right + sample.xoffset)) > 2:
@@ -166,6 +167,7 @@ class Entry:
                         match = self.checkgrouping(char,groupings)
                         if not match:
                             groupings.append([char])
+                
                 #process big groups first, we might use the 1 sized groups to complete bigger stuff
                 groupings = sorted(groupings, key = lambda x: -len(x))
                 #WE HAVE A TRIPLE THREAT
