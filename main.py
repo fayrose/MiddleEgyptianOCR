@@ -35,6 +35,8 @@ def main():
     gm = Matcher(char_img_folder)
     class_rate, good_entries = gm.classify_entries(filtered)
     print("Classification Accuracy: {0}".format(class_rate))
+
+    # Now match good entries to their formatting
     #match(allEntries,char_img_folder)
 
 
