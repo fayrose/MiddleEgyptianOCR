@@ -13,11 +13,7 @@ class DataLoader:
             self.data = json.load(file)
 
     def load_all_entries(self):
-        lst = []
-        for entry in os.listdir(self.entry_folder):
-            page_num, indx = self.page_idx_from_filename(entry)
-            lst.append(self.load_entry(page_num, indx))
-        return lst
+        return self.load_entries_in_range(range(1, 2569))
 
     def load_entries_random(self, num_entries):
         lst = []
@@ -67,5 +63,5 @@ class DataLoader:
         
     def page_idx_from_filename(self, entry):
         page_num = entry[4:entry.index("_")]
-        indx = entry[entry.index(entry) + 5:entry.index('.')]
-        return page_num, indx
+        indx = entry[entry.index("_") + 6:entry.index('.')]
+        return int(page_num), int(indx)
