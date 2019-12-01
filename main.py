@@ -31,6 +31,7 @@ def main():
             break
     
     proc_acc, filtered = processing_accuracy(allEntries)
+    print("Processing Accuracy: {0}".format(proc_acc))
     gm = Matcher(char_img_folder)
     gm.classify_entries(filtered)
     print("now what?")
