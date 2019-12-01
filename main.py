@@ -33,8 +33,8 @@ def main():
     proc_acc, filtered = processing_accuracy(allEntries)
     print("Processing Accuracy: {0}".format(proc_acc))
     gm = Matcher(char_img_folder)
-    gm.classify_entries(filtered)
-    print("now what?")
+    class_rate, good_entries = gm.classify_entries(filtered)
+    print("Classification Accuracy: {0}".format(class_rate))
     #match(allEntries,char_img_folder)
 
 
