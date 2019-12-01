@@ -74,7 +74,7 @@ class Matcher:
         # Partition dictionaries into over/under/correctly classified
         over, under, same = {}, {}, {}
         for dkey in dict1.keys():
-            d1, d2 = dict1[dkey], dict2.get(dkey, default=0)
+            d1, d2 = dict1[dkey], dict2.get(dkey, 0)
             if d1 > d2:
                 under[dkey] = [d1, d2]
             elif d1 < d2:
@@ -82,11 +82,12 @@ class Matcher:
             elif d1 == d2:
                 same[dkey] = d1
         
+        to_remove_over, to_remove_under = [], []
         # Distribute overclassified to underclassified
         for dkey, tpl in over.items():
             # Get distance of each in classified
             # Take lowest d1-distances to keep
-            classed_sorted_by_dist = sorted(class_dict.get(dkey, default=0), key=lambda x: x[0])
+            classed_sorted_by_dist = sorted(class_dict.get(dkey, 0), key=lambda x: x[0])
             to_reclassify = classed_sorted_by_dist[tpl[0]:]
             
             # For any distances higher than that, reclassify to under
@@ -96,9 +97,19 @@ class Matcher:
 
             # Update dictionaries
                 over[dkey][1] -= 1
-                under[dkey][1] += 1
-        classified = [sign.gardiner for sign in entry.glyphs]
-        rec_success = Counter(classified) == dict1
+                if over[dkey][0] == over[dkey][1]:
+                    same[dkey] = over[dkey][0]
+                    to_remove_over.append(dkey)
+
+                under[out_class][1] += 1
+                if under[out_class][0] == under[out_class][1]:
+                    same[out_class] = under[out_class][0]
+                    to_remove_under.append(out_class)
+        
+        for item in to_remove_over:  del over[item]
+        for item in to_remove_under: del under[item]
+        
+        rec_success = len(under) == 0 and len(over) == 0
         print("Reconstruction successful: {0}".format(rec_success))
         return rec_success
 
