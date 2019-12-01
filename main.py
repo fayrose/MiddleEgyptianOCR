@@ -25,7 +25,7 @@ def main():
         entry.process_image()
         allEntries.append(entry)
         p += 1
-    
+        
     proc_acc, filtered = processing_accuracy(allEntries)
     print("Processing Accuracy: {0}".format(proc_acc))
     gm = Matcher(char_img_folder)
