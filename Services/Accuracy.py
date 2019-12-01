@@ -1,4 +1,18 @@
 import re
+from Models.Entry import Entry
+
+def processing_accuracy(entries):
+    num, N = 0.0, len(entries)
+    if N == 0: return N
+
+    filtered_entries = []
+    for ent in entries:
+        out = len(ent.gardinerSigns) == len(ent.glyphs)
+        num += int(out)
+        if out:
+            filtered_entries.append(ent)
+    return float(num) / N, filtered_entries
+
 def get_entry_accuracy(targets, predictions):
     """
     Returns the % of pairs whose target and prediction are identical strings.

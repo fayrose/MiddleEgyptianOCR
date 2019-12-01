@@ -1,30 +1,39 @@
 from Models.Entry import Entry
+from Services.Accuracy import processing_accuracy
 from Services.CrossCorrelation import myCorrelation
 from Services.DataLoader import DataLoader
 from Services.Display import display
 from Services.ImageResizer import resize_img
+from GlyphMatcher import match
+from MomentMatcher import Matcher
 from os import listdir
 import cv2
 import numpy as np
-from GlyphMatcher import match
+
 def main():
 # C:\Users\Tom-H\Documents\CSC420\MiddleEgyptianOCR\Services\DataLoader.py
     allEntries = []
-    entry_img_folder = r"C:\Users\Tom-H\Documents\CSC420\Visual_Vygus\entry_images"
-    data_json_path = r"C:\Users\Tom-H\Documents\CSC420\Visual_Vygus\DatasetGenerator\data.json"
-    char_img_folder = r"C:\Users\Tom-H\Documents\CSC420\Visual_Vygus\character_images"
+    entry_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\entry_images"
+    data_json_path = r"C:\Users\lfr2l\source\repos\DatasetGenerator\DatasetGenerator\data.json"
+    char_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\character_images"
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
-    image_path,sign_list,answer = dataLoader.load_entries_on_page(3)
+    image_path,sign_list,answer = dataLoader.load_entries_on_page(4)
     p = 0
     for i in range(len(image_path)):
         entry = Entry(image_path[i])
         entry.gardiners = sign_list[i]
-        entry.process_image()
+        if i == 15:
+            entry.process_image()
         allEntries.append(entry)
         p += 1
         #FOR TESTING PURPOSES TO KILL CODE EARLY BUT SHOULD REMOVE EVENTUALLY
-        if p > 5:
+        if p > 15:
             break
+    
+    proc_acc, filtered = processing_accuracy(allEntries)
+    gm = Matcher(char_img_folder)
+    gm.classify_entries(filtered)
+    print("now what?")
     #match(allEntries,char_img_folder)
 
 
