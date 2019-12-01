@@ -7,7 +7,7 @@ def processing_accuracy(entries):
 
     filtered_entries = []
     for ent in entries:
-        out = len(ent.gardinerSigns) == len(ent.glyphs)
+        out = len(ent.gardiners) == len(ent.glyphs)
         num += int(out)
         if out:
             filtered_entries.append(ent)

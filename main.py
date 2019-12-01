@@ -17,18 +17,14 @@ def main():
     data_json_path = r"C:\Users\lfr2l\source\repos\DatasetGenerator\DatasetGenerator\data.json"
     char_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\character_images"
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
-    image_path,sign_list,answer = dataLoader.load_entries_on_page(4)
+    image_path,sign_list,answer = dataLoader.load_entries_on_page(3)
     p = 0
     for i in range(len(image_path)):
         entry = Entry(image_path[i])
         entry.gardiners = sign_list[i]
-        if i == 15:
-            entry.process_image()
+        entry.process_image()
         allEntries.append(entry)
         p += 1
-        #FOR TESTING PURPOSES TO KILL CODE EARLY BUT SHOULD REMOVE EVENTUALLY
-        if p > 15:
-            break
     
     proc_acc, filtered = processing_accuracy(allEntries)
     print("Processing Accuracy: {0}".format(proc_acc))
