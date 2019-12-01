@@ -68,8 +68,7 @@ class Matcher:
 
         # If not equal, take sign that has been classified more than it should
         # and only take top k correct. Distribute other signs.
-        self.try_and_recover(entry, class_dict, dict1, dict2)
-        return False
+        return self.try_and_recover(entry, class_dict, dict1, dict2)
     
     def try_and_recover(self, entry, class_dict, dict1 : Counter, dict2 : Counter):
         # Partition dictionaries into over/under/correctly classified
@@ -99,7 +98,9 @@ class Matcher:
                 over[dkey][1] -= 1
                 under[dkey][1] += 1
         classified = [sign.gardiner for sign in entry.glyphs]
-        print("Reconstruction successful: {0}".format(Counter(classified) == dict1))
+        rec_success = Counter(classified) == dict1
+        print("Reconstruction successful: {0}".format(rec_success))
+        return rec_success
 
     def classify_entries(self, entry_list):
         num = 0
