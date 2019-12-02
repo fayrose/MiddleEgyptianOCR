@@ -83,8 +83,8 @@ class Entry:
             group = sorted(group, key = lambda g: g.left + g.xoffset)
             left = group[0].left + group[0].xoffset
             right = group[len(group)-1].right + group[len(group)-1].xoffset
-        upper = min(group, key = lambda char: char.upper)
-        lower = max(group, key = lambda char: char.lower)
+        upper = min(group, key = lambda char: char.upper + char.yoffset)
+        lower = max(group, key = lambda char: char.lower + char.yoffset)
         upperVal = upper.upper + upper.yoffset
         lowerVal = lower.lower + lower.yoffset
         glyph = Glyph(upperVal,lowerVal,left,right,self.image)
@@ -92,8 +92,8 @@ class Entry:
 
     def groupVert(self,group):
         group = sorted(group, key = lambda g: g.upper)
-        upper = min(group, key = lambda char: char.upper)
-        lower = max(group, key = lambda char: char.lower)
+        upper = min(group, key = lambda char: char.upper + char.yoffset)
+        lower = max(group, key = lambda char: char.lower + char.yoffset)
         upperVal = upper.upper + upper.yoffset
         lowerVal = lower.lower + lower.yoffset
         if type(group[0]) is Glyph:
@@ -143,13 +143,13 @@ class Entry:
                 if len(triple) < 3:
                     break
                 #Ignore vertical triples
-                if abs(triple[0].upper - triple[1].upper) > 2:
+                if abs((triple[0].upper + triple[0].yoffset) - (triple[1].upper + triple[1].yoffset)) > 2:
                     continue
                 for j in range(i+1,len(groupings)):
                     single = groupings[j]
                     if len(single) > 1:
                         continue
-                    distance = triple[0].upper - single[0].lower
+                    distance = (triple[0].upper + triple[0].yoffset) - (single[0].lower + single[0].yoffset)
                     if distance < 0:
                         continue
                     if distance < bestDistance:
@@ -165,6 +165,18 @@ class Entry:
             groupings.remove(best[1])
 
             hotdog -= 1
+
+    #Do a width test to find the best triuple and keep the one with the least variance
+    def isBestTriple(self, group,groupings):
+        bestGroup = group
+        bestWidth =  abs(bestGroup[0].width - bestGroup[1].width) + abs(bestGroup[0].width-bestGroup[2].width)
+        for testGroup in groupings:
+            if len(testGroup) != 3:
+                continue
+            widthDif = abs(testGroup[0].width - testGroup[1].width) + abs(testGroup[0].width-testGroup[2].width)
+            if widthDif < bestWidth:
+                return False
+        return True
 
     #For each word above, look for left/right gaps, split word on them
     def split_blocks_into_verticals(self):
@@ -224,6 +236,16 @@ class Entry:
                         for char in group:
                             self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
                         continue
+                    tripleCount = 0
+                    for q in range(len(groupings)):
+                        if len(groupings[q])  == 3:
+                            tripleCount += 1
+                    #There are false positives..!
+                    if tripleThreats < tripleCount:
+                        if not self.isBestTriple(group,groupings):
+                            for char in group:
+                                self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
+                            continue
                     if self.isHori(group):
                         glyph = self.groupHori(group)
                     else:
