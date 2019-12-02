@@ -20,7 +20,20 @@ class VerticalSlice:
       for i in range(0, len(bounds) - 1, 2):
         characterImage = self.image[:,bounds[i]:bounds[i+1]]
         vertBounds = create_boundaries(characterImage,True)
-        character = Character(self.left, self.upper, vertBounds[0],vertBounds[1]+1,bounds[i],bounds[i+1],self.image)
+        if len(vertBounds) == 0:
+          upper = 0
+          lower = self.image.shape[0]-1
+        elif len(vertBounds) == 1:
+          if abs(vertBounds[0]) < abs(self.image.shape[0]-vertBounds):
+            upper = vertBounds[0]
+            lower = self.image.shape[0]-1
+          else:
+            upper = 0
+            lower = vertBounds[0]
+        else:
+          upper = vertBounds[0]
+          lower = vertBounds[1]+1
+        character = Character(self.left, self.upper, upper,lower,bounds[i],bounds[i+1],self.image)
         # display(character.image)
         self.characters.append(character)
       return self.characters
