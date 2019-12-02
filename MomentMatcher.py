@@ -107,7 +107,8 @@ class Matcher:
                 entry.glyphs.append(grouped)
 
                 if to_replace not in class_dict:
-                    class_dict[to_replace] = [(0, grouped)]
+                    _, dist = self.classify(grouped.image, [to_replace])
+                    class_dict[to_replace] = [(dist, grouped)]
                 else:
                     class_dict[to_replace].append((0, grouped))
                 to_delete = [i for i in range(len(class_dict[replace_with])) if class_dict[replace_with][i][1] in group][::-1]
@@ -122,6 +123,7 @@ class Matcher:
         num_groups = dict1[to_replace]
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
+        if len(grouping_candidates) < 2 * num_groups: return
         for i in range(0, len(grouping_candidates), 2):
             group = [grouping_candidates[i], grouping_candidates[i + 1]]
             if abs(group[0].left - group[1].left) < 3 and abs(group[0].upper - group[1].upper) > 3:
@@ -132,7 +134,8 @@ class Matcher:
                 entry.glyphs.append(grouped)
 
                 if to_replace not in class_dict:
-                    class_dict[to_replace] = [(0, grouped)]
+                    _, dist = self.classify(grouped.image, [to_replace])
+                    class_dict[to_replace] = [(dist, grouped)]
                 else:
                     class_dict[to_replace].append((0, grouped))
                 to_delete = [i for i in range(len(class_dict[replace_with])) if class_dict[replace_with][i][1] in group][::-1]
