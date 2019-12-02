@@ -92,7 +92,7 @@ class Matcher:
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
         
-        if len(grouping_candidates) % 2 == 0:
+        if len(grouping_candidates) % 2 == 0 or len(grouping_candidates) > 4:
             itr = range(0, len(grouping_candidates), 2)
         else:
             itr = range(0, len(grouping_candidates))
