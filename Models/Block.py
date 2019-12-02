@@ -12,7 +12,6 @@ class Block:
     def split_into_verticals(self, allChars):
         bounds = create_boundaries(self.image, vertical=True)
         bounds = list(bounds)
-
         if self.image[:bounds[0], :].size != 0 and np.amax(self.image[:bounds[0], :]) > 0:
             bounds = [0] + bounds
         if self.image[bounds[len(bounds)-1]+1:, :].size != 0 and np.amax(self.image[bounds[len(bounds)-1]+1:, :]) > 0:

@@ -24,9 +24,9 @@ def main():
     for batch in batches:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
-        image_path,sign_list, answer = dataLoader.load_entries_in_range(range(13,14))
+        image_path,sign_list, answer = dataLoader.load_entries_in_range(range(17,18))
 
-        for i in range(len(image_path)):
+        for i in range(6,len(image_path)):
             entry = Entry(image_path[i])
             entry.gardiners = sign_list[i]
             entry.process_image()
