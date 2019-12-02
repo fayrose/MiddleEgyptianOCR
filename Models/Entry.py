@@ -15,6 +15,7 @@ class Entry:
         image = cv.imread(filename)
         image = cv.cvtColor(image, cv.COLOR_BGR2GRAY) / 255.0
         image = 1 - image
+        self.filename = filename
         self.image = image
         self.blocks = []
         self.characters = []
@@ -24,9 +25,7 @@ class Entry:
     def process_image(self):
         # display(self.image)
         self.split_into_words()
-        try:
-            self.split_blocks_into_verticals()
-        except: return
+        self.split_blocks_into_verticals()
         for i in range(len(self.glyphs)):
             self.glyphs[i].image = resize_img(self.glyphs[i].image)
 
@@ -48,9 +47,12 @@ class Entry:
                 hori = False
             if abs(char.lower - sample.lower) > 2:
                 hori = False
-            if abs(char.width - sample.width) > 5:
+            if abs(char.width - sample.width) > 7:
                 hori = False
                 vert = False
+            if abs((char.lower - char.upper) - (sample.lower- sample.upper)) > 5:
+                vert = False
+                hori = False
             if abs((char.left + char.xoffset) - (sample.left + sample.xoffset)) > 2:
                 vert = False
             if abs((char.right + char.xoffset) - (sample.right + sample.xoffset)) > 2:
@@ -81,15 +83,19 @@ class Entry:
             group = sorted(group, key = lambda g: g.left + g.xoffset)
             left = group[0].left + group[0].xoffset
             right = group[len(group)-1].right + group[len(group)-1].xoffset
-        upper = min(group, key = lambda char: char.upper).upper
-        lower = max(group, key = lambda char: char.lower).lower
-        glyph = Glyph(upper,lower,left,right,self.image)
+        upper = min(group, key = lambda char: char.upper + char.yoffset)
+        lower = max(group, key = lambda char: char.lower + char.yoffset)
+        upperVal = upper.upper + upper.yoffset
+        lowerVal = lower.lower + lower.yoffset
+        glyph = Glyph(upperVal,lowerVal,left,right,self.image)
         return glyph
 
     def groupVert(self,group):
         group = sorted(group, key = lambda g: g.upper)
-        upper = min(group, key = lambda char: char.upper).upper
-        lower = max(group, key = lambda char: char.lower).lower
+        upper = min(group, key = lambda char: char.upper + char.yoffset)
+        lower = max(group, key = lambda char: char.lower + char.yoffset)
+        upperVal = upper.upper + upper.yoffset
+        lowerVal = lower.lower + lower.yoffset
         if type(group[0]) is Glyph:
             leftChar = min(group, key = lambda char: char.left)
             left = leftChar.left
@@ -101,10 +107,10 @@ class Entry:
             rightChar = max(group, key = lambda char: char.right + char.xoffset)
             right = rightChar.right + rightChar.xoffset
 
-        glyph = Glyph(upper,lower,left,right,self.image)
+        glyph = Glyph(upperVal,lowerVal,left,right,self.image)
         return glyph
 
-    def solvePlugBug(self,group,groupings,i):
+    def solvePlugBug(self,group,groupings,i, inverted = False):
         for j in range(len(groupings)):
             if j == i:
                 continue
@@ -116,7 +122,8 @@ class Entry:
             if leftPlug.left + leftPlug.xoffset <= bottomPlug.left + bottomPlug.xoffset and \
                 rightPlug.left + rightPlug.xoffset >= bottomPlug.right + bottomPlug.xoffset and \
                 abs(leftPlug.width - bottomPlug.width) < 5 and \
-                leftPlug.lower < bottomPlug.upper:
+                (leftPlug.lower < bottomPlug.upper and not inverted or \
+                leftPlug.lower > bottomPlug.upper and inverted):
                 glyph = self.groupVert(group + [bottomPlug])
                 self.glyphs.append(glyph)
                 groupings[j] = []
@@ -125,7 +132,7 @@ class Entry:
                 #its a plug
         #incorrect 2 grouping, add them as sepeeratre glyphs.
         for char in group:
-            self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
+            self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
 
     def solveHotdogs(self,groupings,hotdog):
         while hotdog > 0:
@@ -136,13 +143,13 @@ class Entry:
                 if len(triple) < 3:
                     break
                 #Ignore vertical triples
-                if abs(triple[0].upper - triple[1].upper) > 2:
+                if abs((triple[0].upper + triple[0].yoffset) - (triple[1].upper + triple[1].yoffset)) > 2:
                     continue
                 for j in range(i+1,len(groupings)):
                     single = groupings[j]
                     if len(single) > 1:
                         continue
-                    distance = triple[0].upper - single[0].lower
+                    distance = (triple[0].upper + triple[0].yoffset) - (single[0].lower + single[0].yoffset)
                     if distance < 0:
                         continue
                     if distance < bestDistance:
@@ -159,6 +166,18 @@ class Entry:
 
             hotdog -= 1
 
+    #Do a width test to find the best triuple and keep the one with the least variance
+    def isBestTriple(self, group,groupings):
+        bestGroup = group
+        bestWidth =  abs(bestGroup[0].width - bestGroup[1].width) + abs(bestGroup[0].width-bestGroup[2].width)
+        for testGroup in groupings:
+            if len(testGroup) != 3:
+                continue
+            widthDif = abs(testGroup[0].width - testGroup[1].width) + abs(testGroup[0].width-testGroup[2].width)
+            if widthDif < bestWidth:
+                return False
+        return True
+
     #For each word above, look for left/right gaps, split word on them
     def split_blocks_into_verticals(self):
         if self.blocks is None:
@@ -169,7 +188,7 @@ class Entry:
         #chars are glpyhs, convert to Glyth objects
         if len(self.characters) == len(self.gardiners):
             for char in self.characters:
-                self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
+                self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
         else:
             if len(self.characters) > len(self.gardiners):
                 groupings = []
@@ -195,12 +214,19 @@ class Entry:
                         continue
                     elif len(group) == 1:
                         char = group[0]
-                        self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
+                        self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
                         continue
                     elif len(group) == 2:
                         plugbug = len(SpecialGlyphs.electricPlug.intersection(self.gardiners)) > 0
                         if plugbug:
                             self.solvePlugBug(group,groupings,i)
+                            continue
+                        invertedPlug = len(SpecialGlyphs.invertedPlug.intersection(self.gardiners)) > 0
+                        if invertedPlug:
+                            self.solvePlugBug(group,groupings,i,True)
+                            continue
+                        for char in group:
+                            self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
                         continue
                     elif len(group) != 3:
                         continue
@@ -208,8 +234,18 @@ class Entry:
                     tripleThreats = len(SpecialGlyphs.tripleThreats.intersection(self.gardiners))
                     if tripleThreats <= 0:
                         for char in group:
-                            self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
+                            self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
                         continue
+                    tripleCount = 0
+                    for q in range(len(groupings)):
+                        if len(groupings[q])  == 3:
+                            tripleCount += 1
+                    #There are false positives..!
+                    if tripleThreats < tripleCount:
+                        if not self.isBestTriple(group,groupings):
+                            for char in group:
+                                self.glyphs.append(Glyph(char.upper + char.yoffset,char.lower + char.yoffset,char.left + char.xoffset,char.right + char.xoffset,self.image))
+                            continue
                     if self.isHori(group):
                         glyph = self.groupHori(group)
                     else:
@@ -219,7 +255,7 @@ class Entry:
                     # display(self.image)
 
                 # for glyph in self.glyphs:
-                    # display(glyph.image)
+                #     display(glyph.image)
 
                 #print(len(groupings))
                     # display(char.image)
