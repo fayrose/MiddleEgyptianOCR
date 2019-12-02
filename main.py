@@ -21,7 +21,7 @@ def main():
     gm = Matcher(char_img_folder)
     proc_list, class_list = [], []
 
-    for batch in batches:
+    for batch in batches[3:]:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
         image_path,sign_list, answer = dataLoader.load_entries_in_range(batch)
