@@ -59,15 +59,14 @@ def match(allEntries,char_img_folder):
                 # get borders, remove them
                 horizontal_bounds = create_boundaries(img)
                 vert_bounds = create_boundaries(img,True)
-                # display(img,horizontal_bounds)
 
                 if len(horizontal_bounds) > 0:
                     if len(horizontal_bounds) == 1:
-                        x_val = horizontal_bounds[0]+1
-                        if x_val < abs(img.shape[1]-x_val):
-                            img = img[:,horizontal_bounds[0]+1:]
+                        x_val = horizontal_bounds[0]
+                        if x_val <= abs(img.shape[1]-x_val):
+                            img = img[:,x_val+1:]
                         else:
-                            img = img[:,:horizontal_bounds[0]+1]
+                            img = img[:,:x_val+1]
                     else:
                         left_bound = horizontal_bounds[0]+1
                         right_bound = min(horizontal_bounds[len(horizontal_bounds)-1]+1, img.shape[1])
@@ -76,7 +75,6 @@ def match(allEntries,char_img_folder):
                         if img[ : , right_bound:].size != 0 and np.amax (img[ : , right_bound:]) > 0:
                             right_bound = img.shape[1]     
                         img = img[:,left_bound:right_bound]
-                
                 if len(vert_bounds) > 0:
                     if len(vert_bounds) == 1:
                         y_val = vert_bounds[0]
@@ -85,13 +83,13 @@ def match(allEntries,char_img_folder):
                         else:
                             img = img[:y_val,:]
                     else:
-                        top_bound = vert_bounds[0]
+                        top_bound = vert_bounds[0]+1
                         bot_bound = min(vert_bounds[len(vert_bounds)-1]+1,img.shape[0])
-                        if img[ :vert_bounds[0] , :].size != 0 and np.amax (img[ :vert_bounds[0] , :]) > 0:
+                        if img[ :vert_bounds[0] , :].size != 0 and np.amax(img[ :vert_bounds[0] , :]) > 0:
                             top_bound = 0
-                        if img[ bot_bound: , :].size != 0 and np.amax (img[ bot_bound: , :]) > 0:
+                        if img[ bot_bound: , :].size != 0 and np.amax(img[ bot_bound: , :]) > 0:
                             bot_bound = img.shape[0]                        
-                        img = img[vert_bounds[0]:bot_bound,:]
+                        img = img[top_bound:bot_bound,:]
 
                 if img.size == 0:
                     display(img)
@@ -102,7 +100,6 @@ def match(allEntries,char_img_folder):
 
 
                 kp1,des1 = sift.detectAndCompute(img,None)
-                # display(img)
                 patches = []
                 for i in range(len(kp1)):
                     pt = kp1[i].pt
@@ -138,6 +135,7 @@ def match(allEntries,char_img_folder):
                         
                     maxVs.append(maxV)
                 if len(patches) == 0 :
+                    display(img)
                     continue
                 maxVs = sorted(maxVs, key = lambda x: -x)
                 maxLens = 0
@@ -155,7 +153,6 @@ def match(allEntries,char_img_folder):
                     bestMatch = img
                     matchSquare =squared
 
-            # display(matchSquare)
             # display(bestMatch)
             # display(glyph.image)
             entryMatches.append((bestGardiner,bestMatch))
