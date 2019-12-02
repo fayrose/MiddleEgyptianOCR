@@ -69,24 +69,25 @@ class Matcher:
         # Create count dict of classified signs and assert equal
         dict1 = Counter(entry.gardiners)
         if needs_fixing:
-            self.fix_groupings(entry, replace_dict, dict1)
+            self.fix_groupings(entry, replace_dict, dict1, class_dict)
         dict2 = Counter([x.gardiner for x in entry.glyphs])
         
         if dict1 == dict2: return True
+        if len(entry.gardiners) != len(entry.glyphs): return False
 
         # If not equal, take sign that has been classified more than it should
         # and only take top k correct. Distribute other signs.
         return self.try_and_recover(entry, class_dict, dict1, dict2)
     
-    def fix_groupings(self, entry, replace_dict, dict1):
+    def fix_groupings(self, entry, replace_dict, dict1, class_dict):
         for sign in replace_dict.keys():
             if sign in dict1:
                 if sign != "N19":
-                    self.fix_hor_grouping(entry, sign, replace_dict[sign], dict1)
+                    self.fix_hor_grouping(entry, sign, replace_dict[sign], dict1, class_dict)
                 else:
-                    self.fix_vert_grouping(entry, sign, replace_dict[sign], dict1)
-    
-    def fix_hor_grouping(self, entry, to_replace, replace_with, dict1):
+                    self.fix_vert_grouping(entry, sign, replace_dict[sign], dict1, class_dict)
+
+    def fix_hor_grouping(self, entry, to_replace, replace_with, dict1, class_dict):
         num_groups = dict1[to_replace]
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
@@ -95,19 +96,26 @@ class Matcher:
             itr = range(0, len(grouping_candidates), 2)
         else:
             itr = range(0, len(grouping_candidates))
-            
+
         for i in itr:
             group = [grouping_candidates[i], grouping_candidates[i + 1]]
-            if entry.isHori(group):
+            if entry.isHori(group) or group[1].left - group[0].right < 15:
                 grouped = entry.groupHori(group)
                 grouped.gardiner = to_replace
                 entry.glyphs.remove(group[0])
                 entry.glyphs.remove(group[1])
                 entry.glyphs.append(grouped)
+                class_dict[to_replace] = [(0, grouped)]
+
+                # Update class dict to reflect changes
+                to_delete = [i for i in range(len(class_dict[replace_with])) if class_dict[replace_with][i][1] in group][::-1]
+                for item in to_delete:
+                    del class_dict[replace_with][item]
+                    if len(class_dict[replace_with]) == 0: del class_dict[replace_with]                 
                 replaced += 1
                 if replaced == num_groups: return
         
-    def fix_vert_grouping(self, entry, to_replace, replace_with, dict1):
+    def fix_vert_grouping(self, entry, to_replace, replace_with, dict1, class_dict):
         num_groups = dict1[to_replace]
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
@@ -124,7 +132,9 @@ class Matcher:
 
     def try_and_recover(self, entry, class_dict, dict1 : Counter, dict2 : Counter, print_success=False):
         # Partition dictionaries into over/under/correctly classified
-        over, under, same = {}, {}, {}
+        under, same = {}, {}
+        over = {item : [0, dict2[item]] for item in dict2.keys() if item not in dict1}
+
         for dkey in dict1.keys():
             d1, d2 = dict1[dkey], dict2.get(dkey, 0)
             if d1 > d2:
