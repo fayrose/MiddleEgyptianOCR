@@ -15,6 +15,7 @@ class Entry:
         image = cv.imread(filename)
         image = cv.cvtColor(image, cv.COLOR_BGR2GRAY) / 255.0
         image = 1 - image
+        self.filename = filename
         self.image = image
         self.blocks = []
         self.characters = []
@@ -24,9 +25,7 @@ class Entry:
     def process_image(self):
         # display(self.image)
         self.split_into_words()
-        try:
-            self.split_blocks_into_verticals()
-        except: return
+        self.split_blocks_into_verticals()
         for i in range(len(self.glyphs)):
             self.glyphs[i].image = resize_img(self.glyphs[i].image)
 
@@ -48,9 +47,12 @@ class Entry:
                 hori = False
             if abs(char.lower - sample.lower) > 2:
                 hori = False
-            if abs(char.width - sample.width) > 5:
+            if abs(char.width - sample.width) > 7:
                 hori = False
                 vert = False
+            if abs((char.lower - char.upper) - (sample.lower- sample.upper)) > 5:
+                vert = False
+                hori = False
             if abs((char.left + char.xoffset) - (sample.left + sample.xoffset)) > 2:
                 vert = False
             if abs((char.right + char.xoffset) - (sample.right + sample.xoffset)) > 2:
@@ -93,7 +95,7 @@ class Entry:
         glyph = Glyph(upper,lower,left,right,self.image)
         return glyph
 
-    def solvePlugBug(self,group,groupings,i):
+    def solvePlugBug(self,group,groupings,i, inverted = False):
         for j in range(len(groupings)):
             if j == i:
                 continue
@@ -105,7 +107,8 @@ class Entry:
             if leftPlug.left + leftPlug.xoffset <= bottomPlug.left + bottomPlug.xoffset and \
                 rightPlug.left + rightPlug.xoffset >= bottomPlug.right + bottomPlug.xoffset and \
                 abs(leftPlug.width - bottomPlug.width) < 5 and \
-                leftPlug.lower < bottomPlug.upper:
+                (leftPlug.lower < bottomPlug.upper and not inverted or \
+                leftPlug.lower > bottomPlug.upper and inverted):
                 glyph = self.groupVert(group + [bottomPlug])
                 self.glyphs.append(glyph)
                 groupings[j] = []
@@ -190,6 +193,13 @@ class Entry:
                         plugbug = len(SpecialGlyphs.electricPlug.intersection(self.gardiners)) > 0
                         if plugbug:
                             self.solvePlugBug(group,groupings,i)
+                            continue
+                        invertedPlug = len(SpecialGlyphs.invertedPlug.intersection(self.gardiners)) > 0
+                        if invertedPlug:
+                            self.solvePlugBug(group,groupings,i,True)
+                            continue
+                        for char in group:
+                            self.glyphs.append(Glyph(char.upper,char.lower,char.left + char.xoffset,char.right + char.xoffset,self.image))
                         continue
                     elif len(group) != 3:
                         continue
@@ -208,7 +218,7 @@ class Entry:
                     # display(self.image)
 
                 # for glyph in self.glyphs:
-                    # display(glyph.image)
+                #     display(glyph.image)
 
                 #print(len(groupings))
                     # display(char.image)

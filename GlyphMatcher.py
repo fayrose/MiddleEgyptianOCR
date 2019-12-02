@@ -8,12 +8,34 @@ import cv2
 import numpy as np
 from BoundaryCreator import create_boundaries
 from Services.Display import display
+#V28
+def getAccuracy(allEntries,matches):
+    totalAccuracy = 0
+    for i in range(len(matches)):
+        gardiners,entryMatches = matches[i]
+        entry = allEntries[i]
+        print(gardiners)
+        print(entry.gardiners)
+        intersect = set(gardiners).intersection(set(entry.gardiners))
+        accuracy = len(intersect)/len(set(entry.gardiners))
+
+        if accuracy < 1:
+            print(entryMatches)
+            display(entry.image)
+        totalAccuracy += accuracy
+    totalAccuracy = totalAccuracy/len(matches)
+    print(totalAccuracy)
+
 
 def match(allEntries,char_img_folder):
-    for entry in allEntries[15:]:
+    matches = []
+    for entry in allEntries[:]:
+        entryMatches = []
+        entryGardiners = []
         for glyph in entry.glyphs[:]:
             pastMatches = []
             bestMatch = np.zeros((1,1))
+            bestGardiner = ""
             bestMatchVal = 0
             matchSquare = None
             sift = cv2.xfeatures2d.SIFT_create()
@@ -42,7 +64,7 @@ def match(allEntries,char_img_folder):
                 if len(horizontal_bounds) > 0:
                     if len(horizontal_bounds) == 1:
                         x_val = horizontal_bounds[0]+1
-                        if x_val < abs(img.shape[0]-x_val):
+                        if x_val < abs(img.shape[1]-x_val):
                             img = img[:,horizontal_bounds[0]+1:]
                         else:
                             img = img[:,:horizontal_bounds[0]+1]
@@ -54,7 +76,6 @@ def match(allEntries,char_img_folder):
                         if img[ : , right_bound:].size != 0 and np.amax (img[ : , right_bound:]) > 0:
                             right_bound = img.shape[1]     
                         img = img[:,left_bound:right_bound]
-                # display(img)
                 
                 if len(vert_bounds) > 0:
                     if len(vert_bounds) == 1:
@@ -78,21 +99,7 @@ def match(allEntries,char_img_folder):
                 kernel = np.ones((3,3),np.uint8)/9
                 img = cv2.filter2D(img,-1,kernel)
                 img = img.astype(np.uint8)
-                
-                # display(img)
 
-                # entry = Entry(char_img_folder + "/"+f)
-                # # entry.gardiners = sign_list[i]
-                # #BUG BUG BUG BUG BUG
-                # # BUG BUG
-                # #RIGHT SIDE OF IMAGES ARE BEING CUT OFF????
-                # entry.process_image()
-                # if len(entry.glyphs) == 0:
-                #     continue
-                # img = entry.glyphs[0].image * 255
-                # kernel = np.ones((3,3),np.uint8)/9
-                # img = cv2.filter2D(img,-1,kernel)
-                # img = img.astype(np.uint8)
 
                 kp1,des1 = sift.detectAndCompute(img,None)
                 # display(img)
@@ -110,7 +117,7 @@ def match(allEntries,char_img_folder):
                     Ystart = max(pt[0]-size,0)
                     Yend = min(127,pt[0]+size)
                     patches.append(   (pt,img[Xstart:Xend,Ystart:Yend])    )
-                    if len(patches) > 20:
+                    if len(patches) > 40:
                         break
                 # patches = [ ((0,0),np.copy(img))] + patches
                 maxVSum = 0
@@ -144,37 +151,17 @@ def match(allEntries,char_img_folder):
                 if currentMatchVal > bestMatchVal:
                     bestMatchVal = currentMatchVal
                     pastMatches = [img] + pastMatches
+                    bestGardiner = gardiner
                     bestMatch = img
                     matchSquare =squared
 
-                # display(glyph.image)
-                # display(img)
+            # display(matchSquare)
+            # display(bestMatch)
+            # display(glyph.image)
+            entryMatches.append((bestGardiner,bestMatch))
+            entryGardiners.append(bestGardiner)
+            # for w in pastMatches[:4]:
+            #     display(w)
+        matches.append((entryGardiners,entryMatches))
 
-
-
-                # correlation = cv2.matchTemplate(glyph.image, img, cv2.TM_CCORR_NORMED)
-                # correlation = cv2.filter2D(glyph.image,-1,img)
-
-                # correlation = myCorrelation(glyph.image,img,"same")
-                # display(correlation)        
-
-                # if np.amax(correlation) > np.amax(bestMatch):
-                #     display(correlation)
-
-                #     bestMatch = img
-                #     bestMatchCorrelation = correlation
-            display(matchSquare)
-            display(bestMatch)
-            display(glyph.image)
-            for w in pastMatches[:4]:
-                display(w)
-
-
-        print(entry)
-    # entry = Entry("/Users/thomashorga/Documents/CSC420/MiddleEgyptianOCR/sample4.png")
-    # entry.gardiners = ["A1","B1","Z2", "Z2B","N16"]
-    # display(entry.image)
-    # entry.split_into_words()
-    # entry.split_blocks_into_verticals()
-    # display(entry.blocks[0].image)
-    # display(entry.blocks[0].verticals[1].image)
+    return getAccuracy(allEntries,matches)
