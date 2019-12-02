@@ -82,34 +82,41 @@ class Entry:
             group = sorted(group, key = lambda g: g.left)
             left = group[0].left
             right = group[-1].right
+            upper = min(group, key = lambda char: char.upper)
+            lower = max(group, key = lambda char: char.lower)
+            upperVal = upper.upper
+            lowerVal = lower.lower
         else:
             group = sorted(group, key = lambda g: g.left + g.xoffset)
             left = group[0].left + group[0].xoffset
             right = group[len(group)-1].right + group[len(group)-1].xoffset
-        upper = min(group, key = lambda char: char.upper + char.yoffset)
-        lower = max(group, key = lambda char: char.lower + char.yoffset)
-        upperVal = upper.upper + upper.yoffset
-        lowerVal = lower.lower + lower.yoffset
+            upper = min(group, key = lambda char: char.upper + char.yoffset)
+            lower = max(group, key = lambda char: char.lower + char.yoffset)
+            upperVal = upper.upper + upper.yoffset
+            lowerVal = lower.lower + lower.yoffset
         glyph = Glyph(upperVal,lowerVal,left,right,self.image)
         return glyph
 
     def groupVert(self,group):
         group = sorted(group, key = lambda g: g.upper)
-        upper = min(group, key = lambda char: char.upper + char.yoffset)
-        lower = max(group, key = lambda char: char.lower + char.yoffset)
-        upperVal = upper.upper + upper.yoffset
-        lowerVal = lower.lower + lower.yoffset
         if type(group[0]) is Glyph:
             leftChar = min(group, key = lambda char: char.left)
             left = leftChar.left
             rightChar = max(group, key = lambda char: char.right)
             right = rightChar.right
+            upper = min(group, key = lambda char: char.upper)
+            lower = max(group, key = lambda char: char.lower)
+            upperVal = upper.upper
+            lowerVal = lower.lower
         else:
             leftChar = min(group, key = lambda char: char.left + char.xoffset)
             left = leftChar.left + leftChar.xoffset
             rightChar = max(group, key = lambda char: char.right + char.xoffset)
             right = rightChar.right + rightChar.xoffset
-
+            upper = min(group, key = lambda char: char.upper + char.yoffset)
+            lower = max(group, key = lambda char: char.lower + char.yoffset)
+            upperVal = upper.upper + upper.yoffset
+            lowerVal = lower.lower + lower.yoffset
         glyph = Glyph(upperVal,lowerVal,left,right,self.image)
         return glyph
 
