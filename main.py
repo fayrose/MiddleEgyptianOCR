@@ -20,13 +20,12 @@ def main():
 
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
     gm = Matcher(char_img_folder)
-    proc_list, class_list = [], []
+    proc_list, class1_list, class2_list = [], [], []
 
     for batch in batches[1:]:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
         image_path,sign_list, answer = dataLoader.load_entries_in_range(batch)
-
 
         for i in range(len(image_path)):
             entry = Entry(image_path[i])
@@ -34,25 +33,35 @@ def main():
             entry.process_image()
             allEntries.append(entry)
 
-        accuracy , allMatches = match(allEntries,char_img_folder)
-
-        for gardiners, matches in allMatches:
-            generateLabel(matches)
-
+        # Image Processing Stage
         proc_acc, filtered = processing_accuracy(allEntries)
         print("Processing Accuracy: {0}".format(proc_acc))
+        
+        # Image Classification Stages
+        accuracy , allMatches = match(allEntries,char_img_folder)
+        print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
+
         class_rate, good_entries = gm.classify_entries(filtered)
-        print("Classification Accuracy: {0} \n".format(class_rate))
+        print("Hu Moments Classification Accuracy: {0} \n".format(class_rate))
+        
+        # Image Labelling Stage
+        #for gardiners, matches in allMatches:
+        #    generateLabel(matches)
+
+        #for entry in good_entries:
+        #    generateLabel(matches)
+
+        # Test accuracy of both
+
+        # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
-        class_list.append(class_rate)
-
-
+        class1_list.append(class_rate)
+        class2_list.append(accuracy)
 
     print("Processing accuracy over all batches: {0}".format(sum(proc_list) / len(proc_list)))
-    print("Classification accuracy over all batches: {0}".format(sum(class_list) / len(class_list)))
+    print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
+    print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
 
-    # Now match good entries to their formatting
-    #match(allEntries,char_img_folder)
 
 
 if __name__ == "__main__":
