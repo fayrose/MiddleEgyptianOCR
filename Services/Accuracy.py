@@ -8,6 +8,12 @@ def processing_accuracy(entries):
     filtered_entries = []
     for ent in entries:
         out = len(ent.gardiners) == len(ent.glyphs)
+        if not out:
+            modifier = ent.gardiners.count("N19") + \
+                       ent.gardiners.count("Z4") + \
+                       ent.gardiners.count("Z4A") + \
+                       ent.gardiners.count("Z4B")
+            out = len(ent.gardiners) + modifier == len(ent.glyphs)
         num += int(out)
         if out:
             filtered_entries.append(ent)
