@@ -35,7 +35,7 @@ class Matcher:
         
         else:
             for glyph in set(chars_to_compare):
-                candidate_moment = self.char_moments[glyph]
+                candidate_moment = self.char_moments[glyph.upper()]
                 dist = compare(moment, candidate_moment)
                 if dist < best_candidate_moment:
                     best_candidate_moment = dist
