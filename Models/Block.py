@@ -16,6 +16,12 @@ class Block:
             bounds = [0] + bounds
         if self.image[bounds[len(bounds)-1]+1:, :].size != 0 and np.amax(self.image[bounds[len(bounds)-1]+1:, :]) > 0:
             bounds = bounds + [self.image.shape[0]-1]
+
+        bot_bound = min(bounds[len(bounds)-1]+1,self.image.shape[0])
+        if self.image[ :bounds[0] , :].size != 0 and np.amax(self.image[ :bounds[0] , :]) > 0:
+            bounds = [0] + bounds
+        if self.image[ bot_bound: , :].size != 0 and np.amax(self.image[ bot_bound: , :]) > 0:
+            bounds.append(self.image.shape[0])
         for i in range(0, len(bounds), 2):
             sliced = VerticalSlice(bounds[i], bounds[i + 1], self, self.image)
             characters = sliced.split_slice_into_glyphs()
