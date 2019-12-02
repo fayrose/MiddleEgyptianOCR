@@ -69,17 +69,22 @@ class Entry:
             return True
         s1 = grouping[0]
         s2 = grouping[1]
-        if abs(s1.upper-s2.upper) < 2:
+        if abs(s1.upper-s2.upper) < 3:
             return True
         else:
             return False
 
     def groupHori(self,group):
-        group = sorted(group, key = lambda g: g.left + g.xoffset)
+        if type(group[0]) is Glyph:
+            group = sorted(group, key = lambda g: g.left)
+            left = group[0].left
+            right = group[-1].right
+        else:
+            group = sorted(group, key = lambda g: g.left + g.xoffset)
+            left = group[0].left + group[0].xoffset
+            right = group[len(group)-1].right + group[len(group)-1].xoffset
         upper = min(group, key = lambda char: char.upper).upper
         lower = max(group, key = lambda char: char.lower).lower
-        left = group[0].left + group[0].xoffset
-        right = group[len(group)-1].right + group[len(group)-1].xoffset
         glyph = Glyph(upper,lower,left,right,self.image)
         return glyph
 
@@ -87,10 +92,16 @@ class Entry:
         group = sorted(group, key = lambda g: g.upper)
         upper = min(group, key = lambda char: char.upper).upper
         lower = max(group, key = lambda char: char.lower).lower
-        leftChar = min(group, key = lambda char: char.left + char.xoffset)
-        left = leftChar.left + leftChar.xoffset
-        rightChar = max(group, key = lambda char: char.right + char.xoffset)
-        right = rightChar.right + rightChar.xoffset
+        if type(group[0]) is Glyph:
+            leftChar = min(group, key = lambda char: char.left)
+            left = leftChar.left
+            rightChar = max(group, key = lambda char: char.right)
+            right = rightChar.right
+        else:
+            leftChar = min(group, key = lambda char: char.left + char.xoffset)
+            left = leftChar.left + leftChar.xoffset
+            rightChar = max(group, key = lambda char: char.right + char.xoffset)
+            right = rightChar.right + rightChar.xoffset
 
         glyph = Glyph(upper,lower,left,right,self.image)
         return glyph
