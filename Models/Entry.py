@@ -41,8 +41,11 @@ class Entry:
             if len(groupings[i]) == 3:
                 continue
             sample = groupings[i][0]
+            lastInGroup = groupings[i][len(groupings[i])-1]
             hori = True
             vert = True
+            if abs ( (lastInGroup.right + lastInGroup.xoffset) - (char.left + char.xoffset)) >= 200:
+                hori = False
             if abs(char.upper - sample.upper) > 2:
                 hori = False
             if abs(char.lower - sample.lower) > 2:

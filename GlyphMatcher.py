@@ -19,9 +19,9 @@ def getAccuracy(allEntries,matches):
         intersect = set(gardiners).intersection(set(entry.gardiners))
         accuracy = len(intersect)/len(set(entry.gardiners))
 
-        if accuracy < 1:
-            print(entryMatches)
-            display(entry.image)
+        # if accuracy < 1:
+        #     print(entryMatches)
+        #     display(entry.image)
         totalAccuracy += accuracy
     totalAccuracy = totalAccuracy/len(matches)
     print(totalAccuracy)
