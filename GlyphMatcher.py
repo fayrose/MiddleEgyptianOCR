@@ -25,6 +25,7 @@ def getAccuracy(allEntries,matches):
         totalAccuracy += accuracy
     totalAccuracy = totalAccuracy/len(matches)
     print(totalAccuracy)
+    return (totalAccuracy,matches)
 
 
 def match(allEntries,char_img_folder):
@@ -155,7 +156,7 @@ def match(allEntries,char_img_folder):
 
             # display(bestMatch)
             # display(glyph.image)
-            entryMatches.append((bestGardiner,bestMatch))
+            entryMatches.append((bestGardiner,glyph))
             entryGardiners.append(bestGardiner)
             # for w in pastMatches[:4]:
             #     display(w)
