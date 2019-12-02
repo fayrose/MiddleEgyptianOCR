@@ -91,7 +91,7 @@ class Matcher:
         num_groups = dict1[to_replace]
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
-        
+        if len(grouping_candidates) < 2 * num_groups: return
         if len(grouping_candidates) % 2 == 0 or len(grouping_candidates) > 4:
             itr = range(0, len(grouping_candidates), 2)
         else:
@@ -105,13 +105,16 @@ class Matcher:
                 entry.glyphs.remove(group[0])
                 entry.glyphs.remove(group[1])
                 entry.glyphs.append(grouped)
-                class_dict[to_replace] = [(0, grouped)]
 
-                # Update class dict to reflect changes
+                if to_replace not in class_dict:
+                    class_dict[to_replace] = [(0, grouped)]
+                else:
+                    class_dict[to_replace].append((0, grouped))
                 to_delete = [i for i in range(len(class_dict[replace_with])) if class_dict[replace_with][i][1] in group][::-1]
                 for item in to_delete:
                     del class_dict[replace_with][item]
-                    if len(class_dict[replace_with]) == 0: del class_dict[replace_with]                 
+                    if len(class_dict[replace_with]) == 0: del class_dict[replace_with] 
+
                 replaced += 1
                 if replaced == num_groups: return
         
@@ -127,6 +130,16 @@ class Matcher:
                 entry.glyphs.remove(group[0])
                 entry.glyphs.remove(group[1])
                 entry.glyphs.append(grouped)
+
+                if to_replace not in class_dict:
+                    class_dict[to_replace] = [(0, grouped)]
+                else:
+                    class_dict[to_replace].append((0, grouped))
+                to_delete = [i for i in range(len(class_dict[replace_with])) if class_dict[replace_with][i][1] in group][::-1]
+                for item in to_delete:
+                    del class_dict[replace_with][item]
+                    if len(class_dict[replace_with]) == 0: del class_dict[replace_with]
+
                 replaced += 1
                 if replaced == num_groups: return
 
