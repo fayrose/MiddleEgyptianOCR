@@ -2,6 +2,7 @@ import cv2
 import os
 import numpy as np
 from collections import Counter
+from Models.Entry import Entry
 from Services.ImageResizer import resize_img
 from Services.Display import display
 
@@ -35,7 +36,7 @@ class Matcher:
         
         else:
             for glyph in set(chars_to_compare):
-                candidate_moment = self.char_moments[glyph]
+                candidate_moment = self.char_moments[glyph.upper()]
                 dist = compare(moment, candidate_moment)
                 if dist < best_candidate_moment:
                     best_candidate_moment = dist
@@ -45,15 +46,19 @@ class Matcher:
 
     def classify_entry(self, entry):
         class_dict = {}
+        needs_fixing = len(entry.gardiners) != len(entry.glyphs)
+        replace_dict = {"N19": "N18", "Z4": "Z5A", "Z4A": "Z1", "Z4B":"Z1A"}
         if len(entry.gardiners) == 1 and len(entry.glyphs) == 1:
             entry.glyphs[0].set_classification(entry.gardiners[0])
             return True
+        
+        input = entry.gardiners
+        if needs_fixing:
+            input = [replace_dict[x] if x in replace_dict else x for x in input]
 
         # Classify each sign in entry
-        classified = []
         for sign in entry.glyphs:
-            classification, dist = self.classify(sign.image, entry.gardiners)
-            classified.append(classification)
+            classification, dist = self.classify(sign.image, input)
             sign.set_classification(classification)
 
             if classification in class_dict:
@@ -63,13 +68,54 @@ class Matcher:
         
         # Create count dict of classified signs and assert equal
         dict1 = Counter(entry.gardiners)
-        dict2 = Counter(classified)
+        if needs_fixing:
+            self.fix_groupings(entry, replace_dict, dict1)
+        dict2 = Counter([x.gardiner for x in entry.glyphs])
+        
         if dict1 == dict2: return True
 
         # If not equal, take sign that has been classified more than it should
         # and only take top k correct. Distribute other signs.
         return self.try_and_recover(entry, class_dict, dict1, dict2)
     
+    def fix_groupings(self, entry, replace_dict, dict1):
+        for sign in replace_dict.keys():
+            if sign in dict1:
+                if sign != "N19":
+                    self.fix_hor_grouping(entry, sign, replace_dict[sign], dict1)
+                else:
+                    self.fix_vert_grouping(entry, sign, replace_dict[sign], dict1)
+    
+    def fix_hor_grouping(self, entry, to_replace, replace_with, dict1):
+        num_groups = dict1[to_replace]
+        replaced = 0
+        grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
+        for i in range(0, len(grouping_candidates), 2):
+            group = [grouping_candidates[i], grouping_candidates[i + 1]]
+            if entry.isHori(group):
+                grouped = entry.groupHori(group)
+                grouped.gardiner = to_replace
+                entry.glyphs.remove(group[0])
+                entry.glyphs.remove(group[1])
+                entry.glyphs.append(grouped)
+                replaced += 1
+                if replaced == num_groups: return
+    
+    def fix_vert_grouping(self, entry, to_replace, replace_with, dict1):
+        num_groups = dict1[to_replace]
+        replaced = 0
+        grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
+        for i in range(0, len(grouping_candidates), 2):
+            group = [grouping_candidates[i], grouping_candidates[i + 1]]
+            if abs(group[0].left - group[1].left) < 3 and abs(group[0].upper - group[1].upper) > 3:
+                grouped = entry.groupVert(group)
+                grouped.gardiner = to_replace
+                entry.glyphs.remove(group[0])
+                entry.glyphs.remove(group[1])
+                entry.glyphs.append(grouped)
+                replaced += 1
+                if replaced == num_groups: return
+
     def try_and_recover(self, entry, class_dict, dict1 : Counter, dict2 : Counter, print_success=False):
         # Partition dictionaries into over/under/correctly classified
         over, under, same = {}, {}, {}
