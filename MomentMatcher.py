@@ -90,7 +90,13 @@ class Matcher:
         num_groups = dict1[to_replace]
         replaced = 0
         grouping_candidates = sorted([x for x in entry.glyphs if x.gardiner == replace_with], key=lambda x: x.left)
-        for i in range(0, len(grouping_candidates), 2):
+        
+        if len(grouping_candidates) % 2 == 0:
+            itr = range(0, len(grouping_candidates), 2)
+        else:
+            itr = range(0, len(grouping_candidates))
+            
+        for i in itr:
             group = [grouping_candidates[i], grouping_candidates[i + 1]]
             if entry.isHori(group):
                 grouped = entry.groupHori(group)
@@ -100,7 +106,7 @@ class Matcher:
                 entry.glyphs.append(grouped)
                 replaced += 1
                 if replaced == num_groups: return
-    
+        
     def fix_vert_grouping(self, entry, to_replace, replace_with, dict1):
         num_groups = dict1[to_replace]
         replaced = 0
