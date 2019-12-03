@@ -29,28 +29,28 @@ def get_entry_accuracy(targets, predictions):
 
     num = 0.0
     for i in range(N):
-        if targets[i] == predictions[i]:
+        if predictions[i] is None:
+            N -= 1
+        elif targets[i] == predictions[i]:
             num += 1.0
     return num / N
 
-def get_order_accuracy(targets, predictions):
+def get_order_accuracy(labels, gardinerSigns):
     """
     Gets the % of target/prediction pairs whose glyphs are in the same
     order, regardless of formatting.
     """
-    __err_check(targets, predictions)
-    N = len(targets)
+    __err_check(labels, gardinerSigns)
+    N = len(labels)
     if N == 0: return 0.0
 
     num = 0.0
     for i in range(N):
-        preproc_target = re.split("-|\(|\)|:", targets[i])
-        preproc_pred = re.split("-|\(|\)|:", predictions[i])
+        preproc_target = re.split("-|\(|\)|:", labels[i])
         filter_empty = lambda x: x != ""
         preproc_target = list(filter(filter_empty, preproc_target))
-        preproc_pred = list(filter(filter_empty, preproc_pred))
         preproc_target = " ".join(preproc_target)
-        preproc_pred = " ".join(preproc_pred)
+        preproc_pred = " ".join(gardinerSigns[i])
         if preproc_target == preproc_pred:
             num += 1.0
     return num / N
@@ -67,6 +67,8 @@ def get_glyph_accuracy(targets, predictions):
     num = 0.0
     den = 0.0
     for i in range(N):
+        if predictions[i] is None: continue
+        
         target = targets[i].split('-')
         pred = predictions[i].split('-')
 
@@ -77,6 +79,7 @@ def get_glyph_accuracy(targets, predictions):
             den += 1.0
             if block in pred:
                 num += 1.0
+    if den == 0: return 0.0
     return num / den
 
 def __err_check(targets, predictions):

@@ -73,4 +73,4 @@ def generateLabel(glyphs):
                 puts.append( "("+ "-".join(gardinersSorted) + ")" )
             output += ":".join(puts)
             output += ")"
-    print(output)
+    return output

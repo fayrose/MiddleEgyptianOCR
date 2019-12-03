@@ -21,6 +21,8 @@ class Entry:
         self.characters = []
         self.gardiners = []
         self.glyphs = []
+        self.answer = None
+        self.formatted = None
 
     def process_image(self):
         # display(self.image)
@@ -167,7 +169,7 @@ class Entry:
                     if distance < bestDistance:
                         best = (triple,single)
             if best == None:
-                print("COULD NOT FIND ANYTHING WTF")
+                print("Glyph N16 detected but could not be found.")
                 return
             tripleHotdog = best[0] + best[1]
             glyph = self.groupVert(tripleHotdog)

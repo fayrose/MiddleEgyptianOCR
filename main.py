@@ -8,7 +8,7 @@ from GlyphMatcher import CCSiftMatcher
 from Models.Entry import Entry
 from Models.LabelGenerator import generateLabel
 from MomentMatcher import Matcher
-from Services.Accuracy import processing_accuracy
+from Services.Accuracy import *
 from Services.CrossCorrelation import myCorrelation
 from Services.DataLoader import DataLoader
 from Services.Display import display
@@ -18,7 +18,7 @@ from Services.ImageResizer import resize_img
 def main():
 # C:\Users\Tom-H\Documents\CSC420\MiddleEgyptianOCR\Services\DataLoader.py
     entry_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\entry_images"
-    data_json_path = r"C:\Users\lfr2l\source\repos\DatasetGenerator\DatasetGenerator\data.json"
+    data_json_path = r"C:\Users\lfr2l\source\repos\DatasetGenerator\DatasetGenerator\data2.json"
     char_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\character_images"
     batches = [range(item, item + 100) if item != 2501 else range(item, 2569) for item in range(1, 2569, 100)] 
 
@@ -34,6 +34,7 @@ def main():
 
         for i in trange(len(image_path), desc="Processing images", leave=None):
             entry = Entry(image_path[i])
+            entry.answer = answer[i]
             entry.gardiners = [x if x != "{V11 should be 'mirrored' V11" else "V11" for x in sign_list[i]]
             entry.process_image()
             allEntries.append(entry)
@@ -41,31 +42,43 @@ def main():
         # Image Processing Stage
         proc_acc, filtered = processing_accuracy(allEntries)
         print("Processing Accuracy: {0}".format(proc_acc))
-        
-        # Image Classification Stages
-        accuracy, allMatches = cc_sift.match(allEntries)
-        print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
 
         class_rate, good_entries = gm.classify_entries(filtered)
         print("Hu Moments Classification Accuracy: {0} \n".format(class_rate))
         
+        # Image Classification Stages
+        #accuracy, allMatches = cc_sift.match(filtered)
+        #print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
+
         # Image Labelling Stage
         #for gardiners, matches in allMatches:
-        #    generateLabel(matches)
+        #    label = generateLabel(matches)
 
-        #for entry in good_entries:
-        #    generateLabel(matches)
+        for entry in good_entries:
+            entry_tpl = [(glyph.gardiner, glyph) for glyph in entry.glyphs]
+            label = generateLabel(entry_tpl)
+            entry.formatted = label
 
         # Test accuracy of both
+        hu_formatted = [x.formatted for x in good_entries]
+        hu_answer = [x.answer for x in good_entries]
+        order_acc = get_order_accuracy(hu_formatted, [x.gardiners for x in good_entries])
+        print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
+
+        entry_acc = get_entry_accuracy(hu_formatted, hu_answer)
+        print("Entry Accuracy for Hu Moment Classified: {0}".format(entry_acc))
+
+        glyphblock_acc = get_glyph_accuracy(hu_formatted, hu_answer)
+        print("GlyphBlock Accuracy for Hu Moment Classified: {0}".format(glyphblock_acc))
 
         # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
         class1_list.append(class_rate)
-        class2_list.append(accuracy)
+        #class2_list.append(accuracy)
 
     print("Processing accuracy over all batches: {0}".format(sum(proc_list) / len(proc_list)))
     print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
-    print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
+    #print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
 
 
 
