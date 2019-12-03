@@ -65,11 +65,11 @@ def main():
         order_acc = get_order_accuracy(hu_formatted, [x.gardiners for x in good_entries])
         print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
 
-        entry_acc = get_entry_accuracy(hu_formatted, hu_answer)
-        print("Entry Accuracy for Hu Moment Classified: {0}".format(entry_acc))
-
         glyphblock_acc = get_glyph_accuracy(hu_formatted, hu_answer)
         print("GlyphBlock Accuracy for Hu Moment Classified: {0}".format(glyphblock_acc))
+        
+        entry_acc = get_entry_accuracy(hu_formatted, hu_answer)
+        print("Entry Accuracy for Hu Moment Classified: {0}".format(entry_acc))
 
         # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
