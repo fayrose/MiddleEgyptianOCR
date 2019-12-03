@@ -101,7 +101,7 @@ class CCSiftMatcher:
                 glyph.image = cv2.filter2D(glyph.image,-1,kernel)
                 glyph.image = glyph.image.astype(np.uint8)
 
-                for gardiner in entry.gardiners: #for f in listdir(char_img_folder):
+                for gardiner in set(entry.gardiners): #for f in listdir(char_img_folder):
                     img = self.characters[gardiner.upper()]
 
                     kp1,des1 = sift.detectAndCompute(img,None)

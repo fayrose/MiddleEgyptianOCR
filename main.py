@@ -17,9 +17,9 @@ from Services.ImageResizer import resize_img
 
 def main():
 # C:\Users\Tom-H\Documents\CSC420\MiddleEgyptianOCR\Services\DataLoader.py
-    entry_img_folder = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/entry_images"
-    data_json_path = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/DatasetGenerator/data2.json"
-    char_img_folder = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/character_images"
+    entry_img_folder = "./entry_images"
+    data_json_path = "./data2.json"
+    char_img_folder = "./character_images"
 
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
     gm = Matcher(char_img_folder)
@@ -57,8 +57,8 @@ def main():
             entry.CCSCFormatted = label
 
         CCSC_formatted = [x.CCSCFormatted for x in CCSCEntries]
-        CCSC_answer = [x.CCSCAnswer for x in good_entries]
-        order_acc = get_order_accuracy(CCSC_formatted, [x.gardiners for x in good_entries])
+        CCSC_answer = [x.answer for x in CCSCEntries]
+        order_acc = get_order_accuracy(CCSC_formatted, [x.gardiners for x in CCSCEntries])
         print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
 
         glyphblock_acc = get_glyph_accuracy(CCSC_formatted, CCSC_answer)
@@ -68,31 +68,31 @@ def main():
         print("Entry Accuracy for CCSC Moment Classified: {0}".format(entry_acc))
 
 
-        for entry in good_entries:
-            entry_tpl = [(glyph.gardiner, glyph) for glyph in entry.glyphs]
-            label = generateLabel(entry_tpl)
-            entry.formatted = label
+        # for entry in good_entries:
+        #     entry_tpl = [(glyph.gardiner, glyph) for glyph in entry.glyphs]
+        #     label = generateLabel(entry_tpl)
+        #     entry.formatted = label
 
-        # Test accuracy of both
-        hu_formatted = [x.formatted for x in good_entries]
-        hu_answer = [x.answer for x in good_entries]
-        order_acc = get_order_accuracy(hu_formatted, [x.gardiners for x in good_entries])
-        print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
+        # # Test accuracy of both
+        # hu_formatted = [x.formatted for x in good_entries]
+        # hu_answer = [x.answer for x in good_entries]
+        # order_acc = get_order_accuracy(hu_formatted, [x.gardiners for x in good_entries])
+        # print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
 
-        glyphblock_acc = get_glyph_accuracy(hu_formatted, hu_answer)
-        print("GlyphBlock Accuracy for Hu Moment Classified: {0}".format(glyphblock_acc))
+        # glyphblock_acc = get_glyph_accuracy(hu_formatted, hu_answer)
+        # print("GlyphBlock Accuracy for Hu Moment Classified: {0}".format(glyphblock_acc))
         
-        entry_acc = get_entry_accuracy(hu_formatted, hu_answer)
-        print("Entry Accuracy for Hu Moment Classified: {0}".format(entry_acc))
+        # entry_acc = get_entry_accuracy(hu_formatted, hu_answer)
+        # print("Entry Accuracy for Hu Moment Classified: {0}".format(entry_acc))
 
         # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
-        class1_list.append(class_rate)
+        # class1_list.append(class_rate)
         class2_list.append(accuracy)
         #class2_list.append(accuracy)
 
     print("Processing accuracy over all batches: {0}".format(sum(proc_list) / len(proc_list)))
-    print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
+    # print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
     print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
 
 
