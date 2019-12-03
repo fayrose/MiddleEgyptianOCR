@@ -22,14 +22,14 @@ def main():
     gm = Matcher(char_img_folder)
     proc_list, class1_list, class2_list = [], [], []
 
-    for batch in batches[1:]:
+    for batch in batches:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
         image_path,sign_list, answer = dataLoader.load_entries_in_range(batch)
 
         for i in range(len(image_path)):
             entry = Entry(image_path[i])
-            entry.gardiners = sign_list[i]
+            entry.gardiners = [x if x != "{V11 should be 'mirrored' V11" else "V11" for x in sign_list[i]]
             entry.process_image()
             allEntries.append(entry)
 
@@ -38,8 +38,8 @@ def main():
         print("Processing Accuracy: {0}".format(proc_acc))
         
         # Image Classification Stages
-        accuracy , allMatches = match(allEntries,char_img_folder)
-        print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
+        #accuracy , allMatches = match(allEntries,char_img_folder)
+        #print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
 
         class_rate, good_entries = gm.classify_entries(filtered)
         print("Hu Moments Classification Accuracy: {0} \n".format(class_rate))
@@ -56,11 +56,11 @@ def main():
         # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
         class1_list.append(class_rate)
-        class2_list.append(accuracy)
+        #class2_list.append(accuracy)
 
     print("Processing accuracy over all batches: {0}".format(sum(proc_list) / len(proc_list)))
     print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
-    print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
+    #print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
 
 
 
