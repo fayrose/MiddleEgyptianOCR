@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from tqdm import trange
 
-from GlyphMatcher import match
+from GlyphMatcher import CCSiftMatcher
 from Models.Entry import Entry
 from Models.LabelGenerator import generateLabel
 from MomentMatcher import Matcher
@@ -23,6 +23,7 @@ def main():
     batches = [range(item, item + 100) if item != 2501 else range(item, 2569) for item in range(1, 2569, 100)] 
 
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
+    cc_sift = CCSiftMatcher(char_img_folder)
     gm = Matcher(char_img_folder)
     proc_list, class1_list, class2_list = [], [], []
 
@@ -42,7 +43,7 @@ def main():
         print("Processing Accuracy: {0}".format(proc_acc))
         
         # Image Classification Stages
-        accuracy , allMatches = match(allEntries,char_img_folder)
+        accuracy, allMatches = cc_sift.match(allEntries)
         print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
 
         class_rate, good_entries = gm.classify_entries(filtered)
