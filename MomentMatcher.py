@@ -1,10 +1,13 @@
-import cv2
 import os
-import numpy as np
 from collections import Counter
+
+import cv2
+import numpy as np
+from tqdm import tqdm
+
 from Models.Entry import Entry
-from Services.ImageResizer import resize_img
 from Services.Display import display
+from Services.ImageResizer import resize_img
 
 class Matcher:
     def __init__(self, char_folder_path):
@@ -195,7 +198,7 @@ class Matcher:
     def classify_entries(self, entry_list):
         num = 0
         good_entries = []
-        for entry in entry_list:
+        for entry in tqdm(entry_list, desc="Matching with Hu Moments", leave=None):
             out = self.classify_entry(entry)
             if out:
                 num += 1

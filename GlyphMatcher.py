@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from BoundaryCreator import create_boundaries
 from Services.Display import display
+from tqdm import tqdm
 #V28
 def getAccuracy(allEntries,matches):
     totalAccuracy = 0
@@ -30,10 +31,10 @@ def getAccuracy(allEntries,matches):
 
 def match(allEntries,char_img_folder):
     matches = []
-    for entry in allEntries[:]:
+    for entry in tqdm(allEntries, desc="Matching CC + SIFT", leave=None):
         entryMatches = []
         entryGardiners = []
-        for glyph in entry.glyphs[:]:
+        for glyph in entry.glyphs:
             pastMatches = []
             bestMatch = np.zeros((1,1))
             bestGardiner = ""
