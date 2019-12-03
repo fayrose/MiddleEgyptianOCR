@@ -21,6 +21,8 @@ class Entry:
         self.characters = []
         self.gardiners = []
         self.glyphs = []
+        self.CCSCMatches = None
+        self.CCSCFormatted = None
         self.answer = None
         self.formatted = None
 

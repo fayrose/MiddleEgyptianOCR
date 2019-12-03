@@ -17,15 +17,14 @@ from Services.ImageResizer import resize_img
 
 def main():
 # C:\Users\Tom-H\Documents\CSC420\MiddleEgyptianOCR\Services\DataLoader.py
-    entry_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\entry_images"
-    data_json_path = r"C:\Users\lfr2l\source\repos\DatasetGenerator\DatasetGenerator\data2.json"
-    char_img_folder = r"C:\Users\lfr2l\source\repos\DatasetGenerator\character_images"
-    batches = [range(item, item + 100) if item != 2501 else range(item, 2569) for item in range(1, 2569, 100)] 
+    entry_img_folder = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/entry_images"
+    data_json_path = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/DatasetGenerator/data2.json"
+    char_img_folder = "/Users/thomashorga/Documents/CSC420/Visual_Vygus/character_images"
 
     dataLoader = DataLoader(entry_img_folder,data_json_path,char_img_folder)
-    cc_sift = CCSiftMatcher(char_img_folder)
     gm = Matcher(char_img_folder)
     proc_list, class1_list, class2_list = [], [], []
+    batches = [range(item, item + 100) if item != 2501 else range(item, 2569) for item in range(1, 2569, 100)] 
 
     for batch in batches:
         allEntries = []
@@ -43,16 +42,31 @@ def main():
         proc_acc, filtered = processing_accuracy(allEntries)
         print("Processing Accuracy: {0}".format(proc_acc))
 
-        class_rate, good_entries = gm.classify_entries(filtered)
-        print("Hu Moments Classification Accuracy: {0} \n".format(class_rate))
+        # class_rate, good_entries = gm.classify_entries(filtered)
+        # print("Hu Moments Classification Accuracy: {0} \n".format(class_rate))
         
         # Image Classification Stages
-        #accuracy, allMatches = cc_sift.match(filtered)
-        #print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
+        cc_sift = CCSiftMatcher(char_img_folder)
+        accuracy, CCSCEntries = cc_sift.match(filtered)
+        print("Cross Correlation + SIFT Classification Accuracy: {0}".format(accuracy))
 
         # Image Labelling Stage
-        #for gardiners, matches in allMatches:
-        #    label = generateLabel(matches)
+        for entry in CCSCEntries:
+            matches = entry.CCSCMatches
+            label = generateLabel(matches)
+            entry.CCSCFormatted = label
+
+        CCSC_formatted = [x.CCSCFormatted for x in CCSCEntries]
+        CCSC_answer = [x.CCSCAnswer for x in good_entries]
+        order_acc = get_order_accuracy(CCSC_formatted, [x.gardiners for x in good_entries])
+        print("Order Accuracy for Hu Moment Classified: {0}".format(order_acc))
+
+        glyphblock_acc = get_glyph_accuracy(CCSC_formatted, CCSC_answer)
+        print("GlyphBlock Accuracy for CCSC Moment Classified: {0}".format(glyphblock_acc))
+        
+        entry_acc = get_entry_accuracy(CCSC_formatted, CCSC_answer)
+        print("Entry Accuracy for CCSC Moment Classified: {0}".format(entry_acc))
+
 
         for entry in good_entries:
             entry_tpl = [(glyph.gardiner, glyph) for glyph in entry.glyphs]
@@ -74,11 +88,12 @@ def main():
         # Add metrics to list for average over all batches
         proc_list.append(proc_acc)
         class1_list.append(class_rate)
+        class2_list.append(accuracy)
         #class2_list.append(accuracy)
 
     print("Processing accuracy over all batches: {0}".format(sum(proc_list) / len(proc_list)))
     print("Hu Classification accuracy over all batches: {0}".format(float(sum(class1_list)) / len(class1_list)))
-    #print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
+    print("CC + SIFT Classification accuracy over all batches: {0}".format(float(sum(class2_list)) / len(class2_list)))
 
 
 
