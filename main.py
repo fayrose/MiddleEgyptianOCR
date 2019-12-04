@@ -29,7 +29,7 @@ def main():
     for batch in batches:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
-        image_path,sign_list, answer = dataLoader.load_entries_in_range(batch)
+        image_path,sign_list, answer = dataLoader.load_entries_in_range(range(12,13))
 
         for i in trange(len(image_path), desc="Processing images", leave=None):
             entry = Entry(image_path[i])
@@ -52,8 +52,9 @@ def main():
 
         # Image Labelling Stage
         for entry in CCSCEntries:
-            matches = entry.CCSCMatches
+            matches = entry.CCSCMatches[1]
             label = generateLabel(matches)
+            # print(label)
             entry.CCSCFormatted = label
 
         CCSC_formatted = [x.CCSCFormatted for x in CCSCEntries]

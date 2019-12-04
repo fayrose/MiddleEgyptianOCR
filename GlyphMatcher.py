@@ -14,6 +14,7 @@ from tqdm import tqdm
 class CCSiftMatcher:
     def __init__(self, char_img_folder):
         self.characters = {}
+        self.siftPoints = {}
         for f in listdir(char_img_folder):
             # if gardiner 
             # print(f)
@@ -86,9 +87,10 @@ class CCSiftMatcher:
 
     def match(self, allEntries):
         matches = []
+        siftPoints = {}
         for entry in tqdm(allEntries, desc="Matching CC + SIFT", leave=None):
             entryMatches = []
-            entryGardiners = []
+            #entryGardiners = []
             for glyph in entry.glyphs:
                 pastMatches = []
                 bestMatch = np.zeros((1,1))
@@ -103,8 +105,11 @@ class CCSiftMatcher:
 
                 for gardiner in set(entry.gardiners): #for f in listdir(char_img_folder):
                     img = self.characters[gardiner.upper()]
-
-                    kp1,des1 = sift.detectAndCompute(img,None)
+                    if gardiner.upper() in siftPoints:
+                        kp1,des1 = siftPoints[gardiner.upper()]
+                    else:
+                        kp1,des1 = sift.detectAndCompute(img,None)
+                        self.siftPoints[gardiner.upper()] = (kp1,des1)
                     patches = []
                     for i in range(len(kp1)):
                         pt = kp1[i].pt
@@ -119,7 +124,7 @@ class CCSiftMatcher:
                         Ystart = max(pt[0]-size,0)
                         Yend = min(127,pt[0]+size)
                         patches.append(   (pt,img[Xstart:Xend,Ystart:Yend])    )
-                        if len(patches) > 40:
+                        if len(patches) > 15:
                             break
                     # patches = [ ((0,0),np.copy(img))] + patches
                     maxVSum = 0
@@ -147,7 +152,7 @@ class CCSiftMatcher:
                     for maxi in maxVs:
                         maxVSum+= maxi
                         maxLens+=1
-                        if maxLens > 7:
+                        if maxLens > 5:
                             break
 
                     currentMatchVal = maxVSum/maxLens
@@ -158,9 +163,13 @@ class CCSiftMatcher:
                         bestMatch = img
                         matchSquare =squared
 
-                entryMatches.append((bestGardiner,glyph))
-                entryGardiners.append(bestGardiner)
+                # display(glyph.image)
+                # display(bestMatch)
+                glyph.gardiner = bestGardiner
+                # entryMatches.append((bestGardiner,glyph))
+                # entryGardiners.append(bestGardiner)
+            entryMatches = [(g.gardiner, g) for g in entry.glyphs]
 
-            matches.append((entryGardiners,entryMatches))
+            matches.append((entry.gardiners,entryMatches))
 
         return self.getAccuracy(allEntries,matches)
