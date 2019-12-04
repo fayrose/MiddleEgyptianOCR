@@ -29,7 +29,7 @@ def main():
     for batch in batches:
         allEntries = []
         print("Batch - Pages {0} to {1}".format(batch.start, batch.stop - 1))
-        image_path,sign_list, answer = dataLoader.load_entries_in_range(range(12,13))
+        image_path,sign_list, answer = dataLoader.load_entries_in_range(batch)
 
         for i in trange(len(image_path), desc="Processing images", leave=None):
             entry = Entry(image_path[i])
